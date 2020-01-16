@@ -1,0 +1,47 @@
+{
+	"name" : "Backlog",
+	"tasks" : [
+		{
+			"name" : "make the ui of the tasks",
+			"description" : "make the ui of tasks and display it on the collomn",
+			"assignTeamMembers" : [0],
+			"duration" : 180,
+			"deadline" : 0,
+			"priority" : 1,
+			"acceptance" : false,
+			"test" : "check if it's look great"
+		},
+		{
+			"name" : "template tasks 0",
+			"description" : "it's to fill the holes",
+			"assignTeamMembers" : [0],
+			"duration" : 180,
+			"deadline" : 0,
+			"priority" : 1,
+			"acceptance" : false,
+			"test" : ""
+		},
+		{
+			"name" : "template tasks 1",
+			"description" : "it's to fill the holes",
+			"assignTeamMembers" : [0],
+			"duration" : 180,
+			"deadline" : 0,
+			"priority" : 1,
+			"acceptance" : false,
+			"test" : ""
+		},
+		{
+			"name" : "template tasks 2",
+			"description" : "it's to fill the holes",
+			"assignTeamMembers" : [0],
+			"duration" : 180,
+			"deadline" : 0,
+			"priority" : 1,
+			"acceptance" : false,
+			"test" : ""
+		}
+	],
+	"movableBymembers" : false,
+	"limitation" : 0
+}

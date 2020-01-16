@@ -1,0 +1,7 @@
+{
+	"name" : "Todo",
+	"tasks" : [
+	],
+	"movableBymembers" : true,
+	"limitation" : 0
+}
