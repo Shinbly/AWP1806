@@ -9,25 +9,6 @@ import Register from './Pages/Register';
 import Home from './Pages/Home';
 import Board from './Pages/Board';
 
-/*function App()  {
-  return (
-    <Router>
-      <div className="App">
-        <Header/>
-        <Switch>
-          <Route path = "/login" component = {Login}/>
-          <Route path = "/register" component = {Register}/>
-          <Route path = "/home" component = {Home}/>
-          <Route path = "/board" component = {Board}/>
-
-        </Switch>
-      </div>
-    </Router>
-  );
-}*/
-
-//export default App;
-
 
 class App extends Component {
 	//Initialize state
