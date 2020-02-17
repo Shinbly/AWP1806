@@ -14,7 +14,7 @@ const app = express();
 //made for logging and bodyParser, parses the request body to be a readble json
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
-//app.use(logger('dev'));
+app.use(logger('dev'));
 //const router = express.Router();
 
 //The mongoDB database
