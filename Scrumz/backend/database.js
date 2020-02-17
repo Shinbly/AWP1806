@@ -1,16 +1,13 @@
 //backend/databse.js
 
 const mongoose = require("mongoose");
-const Schema = mongoose.schema;
+const Schema = mongoose.Schema;
 
 //base database structure
 const DataSchema = new Schema(
 	{
 		id: Number,
-		username: String,
-		email: String,
-		password: String,
-		profile_picture_url: String
+		message: String
 	},
 );
 
