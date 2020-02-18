@@ -37,5 +37,33 @@ router.post("/getboards", (req,res) => {
 
 	})
 });
+//@route POST api/boards/newboard
+router.post("/newboard", (req, res) => {
+	Board.create({
+		name : req.body.name,
+		columns : req.body.columns,
+		members : req.body.members,
+		manager : req.body.manager,
+		archived_tasks : [],
+		logs: ["Creation of the Board"],
+	}, function(err,board){
+		if (err) return handleError(err);
+	});
+});
 
+router.post("/updateboard", (req, res) => {
+	update = {};
+	if (req.body.columns != null)
+		update['columns'] = req.body.columns;
+	if (req.body.members != null)
+		update['members'] = req.body.members;
+	if(res.body.archived_tasks != null)
+		update['archived_task'] = req.body.archived_task;
+	if(res.body.logs != null)
+		update['logs'] = req.body.logs;
+	
+
+
+	Board.findByIdAndUpdate(req.body.id,update);
+});
 module.exports = router;
