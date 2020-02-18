@@ -16,6 +16,20 @@ import PropTypes from "prop-types";
 import {connect} from "react-redux";
 import {registerUser} from "../actions/authActions";
 import classnames from "classnames";
+import {withStyles} from '@material-ui/styles';
+
+
+	const styles = theme => ({
+	  avatar: {
+	  },
+	  form: {
+		width: '100%', // Fix IE 11 issue.
+	  },
+	  submit: {
+	  },
+	});
+
+
 
 
 class Register extends Component {
@@ -66,30 +80,7 @@ class Register extends Component {
 	};
 
 	render() {
-
-		// const useStyles = makeStyles(theme => ({
-		//   paper: {
-		// 	marginTop: theme.spacing(8),
-		// 	display: 'flex',
-		// 	flexDirection: 'column',
-		// 	alignItems: 'center',
-		//   },
-		//   avatar: {
-		// 	margin: theme.spacing(1),
-		// 	backgroundColor: theme.palette.secondary.main,
-		//   },
-		//   form: {
-		// 	width: '100%', // Fix IE 11 issue.
-		// 	marginTop: theme.spacing(1),
-		//   },
-		//   submit: {
-		// 	margin: theme.spacing(3, 0, 2),
-		//   },
-		// }));
-
-
-
-	  //const classes = useStyles();
+	  const {classes}=this.props;
 
 	  const {errors} = this.state;
 
@@ -197,7 +188,8 @@ class Register extends Component {
 Register.propTypes = {
 	registerUser: PropTypes.func.isRequired,
 	auth: PropTypes.object.isRequired,
-	errors: PropTypes.object.isRequired
+	errors: PropTypes.object.isRequired,
+	classes: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = state => ({
@@ -205,7 +197,7 @@ const mapStateToProps = state => ({
 	errors: state.errors
 });
 
-export default connect(
+export default withStyles(styles)(connect(
 	mapStateToProps,
 	{registerUser}
-)(withRouter(Register));
+)(withRouter(Register)));

@@ -4,12 +4,12 @@ import Paper from '@material-ui/core/Paper';
 
 import { makeStyles } from '@material-ui/core/styles';
 
-import Backlog from '../Assets/BacklogExemple.json'
-import SprintBacklog from '../Assets/SprintBacklog.json'
-import Todo from '../Assets/Todo.json'
-import Doing from '../Assets/Doing.json'
-import ToTest from '../Assets/ToTest.json'
-import Done from '../Assets/Done.json'
+import Backlog from '../Examples/BacklogExemple.json'
+import SprintBacklog from '../Examples/SprintBacklog.json'
+import Todo from '../Examples/Todo.json'
+import Doing from '../Examples/Doing.json'
+import ToTest from '../Examples/ToTest.json'
+import Done from '../Examples/Done.json'
 import { Button } from '@material-ui/core';
 
 const useStyles = makeStyles(theme => ({

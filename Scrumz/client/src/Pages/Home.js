@@ -2,11 +2,25 @@ import React, {Component} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
-import { Card, CardActionArea, Button } from '@material-ui/core';
+import {Card, CardActionArea, CardContent, CardMedia, CardActions, Typography} from '@material-ui/core';
+import {Button } from '@material-ui/core';
 import PropTypes from "prop-types";
 import {connect} from "react-redux";
 import {logoutUser} from "../actions/authActions";
 import axios from "axios";
+import {withStyles} from '@material-ui/styles';
+
+import Texture from "../Assets/boardsImg/texture1.jpg";
+
+
+const styles = theme => ({
+   root: {
+     flexGrow: 1,
+   },
+   cards: {
+	   maxWidth: 345
+   }
+});
 
 class Home extends Component {
 
@@ -38,18 +52,6 @@ class Home extends Component {
 
 
   FormRow() {
-
-	  // const useStyles = makeStyles(theme => ({
-	  //   root: {
-	  //     flexGrow: 1,
-	  //   },
-	  //   paper: {
-	  //     padding: theme.spacing(1),
-	  //     textAlign: 'center',
-	  //     color: theme.palette.text.secondary,
-	  //   },
-	  // }));
-	  // const classes = useStyles();
     return (
         <React.Fragment>
         <Grid item xs={4}>
@@ -75,14 +77,34 @@ class Home extends Component {
 }
 
 	render(){
+		const {classes}=this.props;
+
 		const {user} = this.props.auth;
 
 		console.log(this.state.boards);
 
+
 		const boards = this.state.boards.map(board => (
-			<Paper elevation={3}>
-				<p>name: {board.name}</p>
-			</Paper>
+			<Grid item key={board._id}>
+			<Card className={classes.cards} >
+				<CardActionArea>
+					<CardMedia
+						component="img"
+						alt="Texture"
+						height="140"
+						image={Texture}
+					/>
+				<CardContent>
+					<Typography>{board.name}</Typography>
+				</CardContent>
+				</CardActionArea>
+				<CardActions>
+					<Button size="small" color="primary">
+						See Board
+					</Button>
+				</CardActions>
+			</Card>
+			</Grid>
 		));
 
 		return (
@@ -96,7 +118,9 @@ class Home extends Component {
                 >
                     Logout
               </Button>
-			  {boards}
+			  <Grid container spacing = {3} justify="center" alignItems = "center">
+			  	{boards}
+	  		</Grid>
 		  </div>
 		);
 	}
@@ -104,14 +128,15 @@ class Home extends Component {
 
 Home.propTypes = {
 	logoutUser: PropTypes.func.isRequired,
-	auth: PropTypes.object.isRequired
+	auth: PropTypes.object.isRequired,
+	classes: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = state => ({
 	auth: state.auth
 });
 
-export default connect(
-	mapStateToProps,
-	{logoutUser}
-)(Home);
+export default withStyles(styles)(connect(
+    mapStateToProps,
+    {logoutUser}
+)(Home));
