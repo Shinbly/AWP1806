@@ -49,33 +49,6 @@ class Home extends Component {
 	  this.props.logoutUser();
   }
 
-
-
-  FormRow() {
-    return (
-        <React.Fragment>
-        <Grid item xs={4}>
-          <Paper className="ok">
-            <Button href = '/board' >
-              <Card>
-                Content of the card
-              </Card>
-            </Button>
-          </Paper>
-        </Grid>
-        <Grid item xs={4}>
-          <Paper className="ok">
-            <Button href = '/board' >
-              <Card>
-                Content of the card
-              </Card>
-            </Button>
-          </Paper>
-        </Grid>
-      </React.Fragment>
-    );
-}
-
 	render(){
 		const {classes}=this.props;
 
@@ -99,7 +72,17 @@ class Home extends Component {
 				</CardContent>
 				</CardActionArea>
 				<CardActions>
-					<Button size="small" color="primary">
+					<Button size="small" color="primary"
+						onClick={() => this.props.history.push(
+							{
+								pathname: "/board",
+								data:
+								{
+									id: board._id,
+									columns: board.columns
+								}
+							})
+					}>
 						See Board
 					</Button>
 				</CardActions>
