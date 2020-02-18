@@ -7,7 +7,9 @@ const passport = require("passport");
 //const Data = require('./models/User');
 
 const users = require("./routes/api/users");
-const boards = require("./routes/api/boards");
+const boards = require("./routes/api/boards"); 
+const columns = require("./routes/api/columns");
+const tasks = require("./routes/api/tasks");
 
 const API_PORT = 3001;
 const app = express();
@@ -35,6 +37,8 @@ require("./config/passport")(passport);
 //routes
 app.use("/api/users", users);
 app.use("/api/boards", boards);
+app.use("/api/columns", columns);
+app.use("/api/tasks", tasks);
 
 //let db = mongoose.connection;
 
