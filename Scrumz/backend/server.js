@@ -7,6 +7,7 @@ const passport = require("passport");
 //const Data = require('./models/User');
 
 const users = require("./routes/api/users");
+const boards = require("./routes/api/boards");
 
 const API_PORT = 3001;
 const app = express();
@@ -33,6 +34,7 @@ require("./config/passport")(passport);
 
 //routes
 app.use("/api/users", users);
+app.use("/api/boards", boards);
 
 //let db = mongoose.connection;
 
