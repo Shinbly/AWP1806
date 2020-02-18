@@ -39,44 +39,60 @@ class Board extends Component {
 		this.state = {
 			id: "",
 			name: "",
-			columns: []
+			columns: [],
+			tasks : {},
 		};
 	}
 
 	componentDidMount(){
 		let columns = {ids: this.props.location.data.columns};
+		var tasks = {};
 		axios
 			.post("/api/columns/getcolumns", columns)
 			.then(res => {
 				this.setState({columns: res.data});
-				console.log(this.state.columns);
+			})
+			.then(()=>{
+				this.state.columns.forEach(column =>
+					{
+					if(column.tasks.length > 0){
+						axios.post("api/tasks/gettasks", {ids : column.tasks}).then(res => {
+							var tasks = this.state.tasks;
+							res.data.forEach(task => {
+								tasks[task._id].push(task);
+							});
+							this.setState({tasks : tasks})
+						});
+					}
+				});
+			}).then(()=>{
+				console.log("task =", this.state.tasks);
 			})
 			.catch(err => {console.log(err)}
 		);
 	}
 
+
 	render () {
 
-		console.log(this.props.location.data);
 	    //const [spacing, setSpacing] = React.useState(2);
 	    //const classes = useStyles();
-
 		return (
 			<Grid item xs={12}>
 			  <Grid container justify="center" spacing={3} >
 				{this.state.columns.map(value => (
-				  <Grid key={value} item>
+				  <Grid key={value._id} item>
 					<Paper>
 					  <h4>
 						{value.name}
 					  </h4>
 					  <Grid container justify="center" spacing={3}>
-						{value.tasks.map(task => (
-						  <Paper elevation={6} className>
+						{value.tasks.map(taskId => (
+						  <Paper elevation={6}>
 							<h4>
-								{task.name}
+								{taskId}
 							</h4>
-							{task.description}
+								{taskId}
 						   </Paper>
 						))}
 					  </Grid>

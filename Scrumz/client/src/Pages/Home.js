@@ -97,7 +97,6 @@ class Home extends Component {
                     onClick={this.onLogoutClick}
                     variant="contained"
                     color="primary"
-                    className="ok"
                 >
                     Logout
               </Button>
