@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {Component} from "react";
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -53,7 +53,7 @@ import classnames from "classnames";
 
 	onSubmit = e => {
 
-		this.setState({[e.target.id]: e.target.value});
+		e.preventDefault();
 
 		const userData = {
 			email: this.state.email,
@@ -103,26 +103,29 @@ import classnames from "classnames";
 			<Typography component="h1" variant="h5">
 			  Sign in
 			</Typography>
-			<form className="ok" noValidate onSubmit={this.onSubmit}>
-			  <TextField
-			  	onChange = {this.onChange}
-			  	value = {this.state.email}
-				error = {errors.email}
-				className={classnames("", {
-					invalid: errors.email || errors.emailnotfound
-				})}
-				type="email"
-				variant="outlined"
-				margin="normal"
-				required
-				fullWidth
-				id="email"
-				label="Email Address"
-				name="email"
-				autoComplete="email"
-				autoFocus
-			  />
-			  <span className="red-text">{errors.email}{errors.emailnotfound}</span>
+			<form noValidate onSubmit={this.onSubmit}>
+				<div>
+					<TextField
+						onChange = {this.onChange}
+						value = {this.state.email}
+						error = {errors.email}
+						className={classnames("", {
+							invalid: errors.email || errors.emailnotfound
+						})}
+						type="email"
+						variant="outlined"
+						margin="normal"
+						required
+						fullWidth
+						id="email"
+						label="Email Address"
+						name="email"
+						autoComplete="email"
+						autoFocus
+					/>
+					<span className="red-text">{errors.email}{errors.emailnotfound}</span>
+				</div>
+
 			  <TextField
 			  	onChange = {this.onChange}
 				value = {this.state.password}
@@ -150,7 +153,6 @@ import classnames from "classnames";
 				fullWidth
 				variant="contained"
 				color="primary"
-				className="ok"
 			  >
 				Sign In
 			  </Button>

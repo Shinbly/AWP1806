@@ -57,6 +57,14 @@ class Home extends Component {
 		return (
 		  <div className="ok">
 			 <h1>Your Board</h1>
+			 <Button
+                    onClick={this.onLogoutClick}
+                    variant="contained"
+                    color="primary"
+                    className="ok"
+                >
+                    Logout
+              </Button>
 			<Grid container spacing={1}>
 			  <Grid container item xs={12} spacing={3}>
 				<React.Fragment>

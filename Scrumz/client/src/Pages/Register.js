@@ -46,7 +46,7 @@ class Register extends Component {
 		}
 	}
 
-	onChanged = e => {
+	onChange = e => {
 		this.setState({
 			[e.target.id]: e.target.value
 		});
@@ -103,7 +103,7 @@ class Register extends Component {
 	        <Typography component="h1" variant="h5">
 	          Sign Up
 	        </Typography>
-	        <form noValidate onSubmit={this.onSubmit} className="ok">
+	        <form noValidate onSubmit={this.onSubmit}>
 	          <TextField
 			  	onChange={this.onChange}
 				value = {this.state.username}
@@ -179,7 +179,6 @@ class Register extends Component {
 	          />
 			  <span className = "red-text">{errors.password2}</span>
 	          <Button
-	            href = '/home'
 	            type="submit"
 	            fullWidth
 	            variant="contained"
