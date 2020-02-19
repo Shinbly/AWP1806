@@ -38,7 +38,6 @@ class Home extends Component {
 				.post("/api/boards/getboards", user)
 				.then(res => {
 					this.setState({boards: res.data});
-					 console.log(this.state.boards);
 				 })
 				.catch(err =>{console.log(err)}
 				);
@@ -49,12 +48,29 @@ class Home extends Component {
 	  this.props.logoutUser();
   }
 
+	createNewBoard = e => {
+	  var id = this.props.auth.user.id;
+	  var newBoard = {
+		  name: `test Board`,
+		  columns: [],
+		  members: [id],
+		  manager: id,
+	  };
+	  this.onNewBoard(newBoard);
+  }
+
+	onNewBoard(newBoard){
+		axios.post("/api/boards/newboard", newBoard).then(res => {
+			var boards = this.state.boards;
+			boards.push(res.data);
+			this.setState({ boards: boards });
+		})
+  }
+
 	render(){
 		const {classes}=this.props;
 
 		const {user} = this.props.auth;
-
-		console.log(this.state.boards);
 
 
 		const boards = this.state.boards.map(board => (
@@ -79,7 +95,7 @@ class Home extends Component {
 								data:
 								{
 									id: board._id,
-									columns: board.columns
+									columns: board.columns,
 								}
 							})
 					}>
@@ -102,7 +118,14 @@ class Home extends Component {
               </Button>
 			  <Grid container spacing = {3} justify="center" alignItems = "center">
 			  	{boards}
-	  		</Grid>
+			  </Grid>
+			  <Button
+				onClick={this.createNewBoard}
+                variant="contained"
+                color="primary"
+              >
+              	new Board
+              </Button>
 		  </div>
 		);
 	}

@@ -40,36 +40,51 @@ class Board extends Component {
 			id: "",
 			name: "",
 			columns: [],
-			tasks : {},
 		};
 	}
 
 	componentDidMount(){
 		let columns = {ids: this.props.location.data.columns};
-		var tasks = {};
-		axios
-			.post("/api/columns/getcolumns", columns)
-			.then(res => {
-				this.setState({columns: res.data});
-			})
-			.then(()=>{
-				this.state.columns.forEach(column =>
-					{
-					if(column.tasks.length > 0){
-						axios.post("api/tasks/gettasks", {ids : column.tasks}).then(res => {
-							var tasks = this.state.tasks;
-							res.data.forEach(task => {
-								tasks[task._id].push(task);
+		if (this.props.location.data.columns.length>0){
+			axios.post("/api/columns/getcolumns", columns)
+				.then(async res => {
+					var columns = [];
+					Promise.all(res.data.map(column => {
+						console.log(column);
+						if (column.tasks.length > 0) {
+
+
+							return axios.post("api/tasks/gettasks", { ids: column.tasks }).then(async  res => {
+								return (
+									{
+										_id: column._id,
+										name: column.name,
+										tasks: res.data,
+										movableByMembers: column.movableByMembers,
+										limitation: column.limitation,
+									}
+								);
 							});
-							this.setState({tasks : tasks})
-						});
-					}
-				});
-			}).then(()=>{
-				console.log("task =", this.state.tasks);
-			})
-			.catch(err => {console.log(err)}
-		);
+						} else {
+							return (
+								{
+									_id: column._id,
+									name: column.name,
+									tasks: [],
+									movableByMembers: column.movableByMembers,
+									limitation: column.limitation,
+								}
+							);
+						}
+
+					})).then((res) => {
+						this.setState({ columns: res });
+					});
+				})
+				.catch(err => { console.log(err) }
+				);
+		}
+		
 	}
 
 
@@ -80,23 +95,30 @@ class Board extends Component {
 		return (
 			<Grid item xs={12}>
 			  <Grid container justify="center" spacing={3} >
-				{this.state.columns.map(value => (
+				{this.state.columns.map((value , index)=> (
 				  <Grid key={value._id} item>
 					<Paper>
 					  <h4>
 						{value.name}
 					  </h4>
 					  <Grid container justify="center" spacing={3}>
-						{value.tasks.map(taskId => (
-						  <Paper elevation={6}>
-							<h4>
-								{taskId}
-							</h4>
-								{taskId}
-						   </Paper>
-						))}
+
+						{
+						(value.tasks.length > 0) 
+						?
+						value.tasks.map(task=>(
+							<Paper elevation={6}>
+								<h4>
+									{task.name}
+								</h4>
+								{task.description}
+							</Paper>
+						))
+						:
+						null
+						}
 					  </Grid>
-					  {(value.name == "Backlog")
+					  {(index == 0)
 					  ?
 					  <Button>
 						+Add a Card
