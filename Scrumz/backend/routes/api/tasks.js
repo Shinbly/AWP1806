@@ -5,17 +5,18 @@ const keys = require("../../config/keys");
 //Load board model
 const Task = require("../../models/Task");
 
-//@route POST api/boards/gettasks
-//@desc Get boards of the user
+//@route POST api/tasks/gettasks
+//@desc Get tasks
 //@access Public
 router.post("/gettasks", (req, res) => {
     const taskids = req.body.ids;
-    console.log(req.body);
+    console.log(req.body.ids);
     var taskList = [];
     Task.find().where('_id').in(taskids).exec((err, tasks) => {
         tasks.forEach((task) => {
             taskList.push(task);
         });
+        console.log(taskList);
         res.send(taskList);
     });
 

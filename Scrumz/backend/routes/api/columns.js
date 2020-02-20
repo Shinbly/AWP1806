@@ -13,10 +13,12 @@ router.post("/getcolumns", (req, res) => {
     console.log(req.body);
     var columnList = [];
     Column.find().where('_id').in(columnids).exec((err, columns) => {
-        columns.forEach((column)=>{
-            columnList.push(column);
-        });
-        res.send(columnList);
+        if(columns.length>0){
+            columns.forEach((column)=>{
+                columnList.push(column);
+            });
+            res.send(columnList);
+        }
      });
     
 });

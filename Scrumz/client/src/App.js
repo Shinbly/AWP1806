@@ -15,6 +15,7 @@ import Register from './Pages/Register';
 import Home from './Pages/Home';
 import Board from './Pages/Board';
 import Profile from './Pages/Profile';
+import NewBoard from './Pages/NewBoard';
 import PrivateRoute from "./Pages/private-route/PrivateRoute";
 
 //Check for token to keep user logged in
@@ -150,6 +151,7 @@ class App extends Component {
 				  <Route path = "/profile" component = {Profile}/>
 				  <Switch>
 				  	<PrivateRoute path="/home" component={Home}/>
+					<PrivateRoute path="/newboard" component={NewBoard}/>
 				  </Switch>
 		      </div>
 		    </Router>

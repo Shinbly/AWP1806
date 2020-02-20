@@ -39,6 +39,7 @@ router.post("/getboards", (req,res) => {
 });
 //@route POST api/boards/newboard
 router.post("/newboard", (req, res) => {
+	console.log('newBoard', req.body);
 	Board.create({
 		name : req.body.name,
 		columns : req.body.columns,
@@ -48,6 +49,7 @@ router.post("/newboard", (req, res) => {
 		logs: ["Creation of the Board"],
 	}, function(err,board){
 		if (err) return handleError(err);
+		res.send(board);
 	});
 });
 

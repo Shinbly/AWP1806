@@ -30,60 +30,98 @@ class Board extends Component {
 		this.state = {
 			id: "",
 			name: "",
-			columns: []
+			columns: [],
 		};
 	}
 
 	componentDidMount(){
+		this.setState({id : this.props.location.data.id, name: this.props.location.data.name});
 		let columns = {ids: this.props.location.data.columns};
-		axios
-			.post("/api/columns/getcolumns", columns)
-			.then(res => {
-				this.setState({columns: res.data});
-				console.log(this.state.columns);
-			})
-			.catch(err => {console.log(err)}
-		);
+		if (this.props.location.data.columns.length>0){
+			axios.post("/api/columns/getcolumns", columns)
+				.then(async res => {
+					var columns = [];
+					Promise.all(res.data.map(column => {
+						console.log(column);
+						if (column.tasks.length > 0) {
+
+
+							return axios.post("api/tasks/gettasks", { ids: column.tasks }).then(async  res => {
+								return (
+									{
+										_id: column._id,
+										name: column.name,
+										tasks: res.data,
+										movableByMembers: column.movableByMembers,
+										limitation: column.limitation,
+									}
+								);
+							});
+						} else {
+							return (
+								{
+									_id: column._id,
+									name: column.name,
+									tasks: [],
+									movableByMembers: column.movableByMembers,
+									limitation: column.limitation,
+								}
+							);
+						}
+
+					})).then((res) => {
+						this.setState({ columns: res });
+					});
+				})
+				.catch(err => { console.log(err) }
+				);
+		}
+
 	}
+
 
 	render () {
 
-		console.log(this.props.location.data);
 	    //const [spacing, setSpacing] = React.useState(2);
 	    //const classes = useStyles();
-
 		return (
-			<Grid item xs={12}>
-			  <Grid container justify="center" spacing={3} >
-				{this.state.columns.map(value => (
-				  <Grid key={value} item>
-					<Paper>
-					  <h4>
-						{value.name}
-					  </h4>
-					  <Grid container justify="center" spacing={3}>
-						{value.tasks.map(task => (
-						  <Paper elevation={6} className>
-							<h4>
-								{task.name}
-							</h4>
-							{task.description}
-						   </Paper>
+			<div>
+				<h2>{this.state.name}</h2>
+				<Grid item xs={12}>
+					<Grid container justify="center" spacing={3} >
+						{this.state.columns.map((value, index) => (
+							<Grid key={value._id} item>
+								<Paper>
+									<h4>
+										{value.name}
+									</h4>
+									<Grid container justify="center" spacing={3}>
+										{(value.tasks.length > 0)
+										?
+										value.tasks.map(task => (
+											<Paper elevation={6}>
+												<h4>
+													{task.name}
+												</h4>
+												{task.description}
+											</Paper>
+										))
+										:
+										null}
+									</Grid>
+									{(index === 0)
+									?
+									<Button>
+										+Add a Card
+									</Button>
+									:
+									null}
+								</Paper>
+							</Grid>
 						))}
-					  </Grid>
-					  {(value.name === "Backlog")
-					  ?
-					  <Button>
-						+Add a Card
-					  </Button>
-					  :
-					  null}
-					</Paper>
-
-				  </Grid>
-				))}
-			  </Grid>
-			</Grid>
+					</Grid>
+				</Grid>
+			</div>
 		);
 	}
 
