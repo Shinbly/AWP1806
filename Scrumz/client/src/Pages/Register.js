@@ -3,15 +3,10 @@ import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
-import Grid from '@material-ui/core/Grid';
-import Box from '@material-ui/core/Box';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import {Link, withRouter} from "react-router-dom";
+import {withRouter} from "react-router-dom";
 import PropTypes from "prop-types";
 import {connect} from "react-redux";
 import {registerUser} from "../actions/authActions";
@@ -61,9 +56,7 @@ class Register extends Component {
 	}
 
 	onChange = e => {
-		this.setState({
-			[e.target.id]: e.target.value
-		});
+		this.setState({[e.target.id]: e.target.value});
 	};
 
 	onSubmit = e => {
@@ -80,8 +73,6 @@ class Register extends Component {
 	};
 
 	render() {
-	  const {classes}=this.props;
-
 	  const {errors} = this.state;
 
 	  return (

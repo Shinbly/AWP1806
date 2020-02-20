@@ -7,7 +7,7 @@ const passport = require("passport");
 //const Data = require('./models/User');
 
 const users = require("./routes/api/users");
-const boards = require("./routes/api/boards"); 
+const boards = require("./routes/api/boards");
 const columns = require("./routes/api/columns");
 const tasks = require("./routes/api/tasks");
 

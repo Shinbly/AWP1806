@@ -1,6 +1,4 @@
 import React, {Component} from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import {Card, CardActionArea, CardContent, CardMedia, CardActions, Typography} from '@material-ui/core';
 import {Button } from '@material-ui/core';
@@ -51,8 +49,6 @@ class Home extends Component {
 
 	render(){
 		const {classes}=this.props;
-
-		const {user} = this.props.auth;
 
 		console.log(this.state.boards);
 

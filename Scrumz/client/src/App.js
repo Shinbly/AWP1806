@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import axios from 'axios';
 import './App.css';
 import {BrowserRouter as Router, Switch, Route} from 'react-router-dom';
 
@@ -15,6 +14,7 @@ import Login from './Pages/Login';
 import Register from './Pages/Register';
 import Home from './Pages/Home';
 import Board from './Pages/Board';
+import Profile from './Pages/Profile';
 import PrivateRoute from "./Pages/private-route/PrivateRoute";
 
 //Check for token to keep user logged in
@@ -139,7 +139,6 @@ class App extends Component {
 
 
 	render()  {
-		const {data} = this.state;
 	  return (
 		  <Provider store={store}>
 		    <Router>
@@ -148,6 +147,7 @@ class App extends Component {
 		          <Route path = "/login" component = {Login}/>
 		          <Route path = "/register" component = {Register}/>
 		          <Route path = "/board" component = {Board}/>
+				  <Route path = "/profile" component = {Profile}/>
 				  <Switch>
 				  	<PrivateRoute path="/home" component={Home}/>
 				  </Switch>

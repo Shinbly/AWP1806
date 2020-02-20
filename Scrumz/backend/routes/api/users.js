@@ -7,6 +7,7 @@ const keys = require("../../config/keys");
 //Load input validation
 const validateRegisterInput = require("../../validation/register");
 const validateLoginInput = require("../../validation/login");
+const validateUpdateInput = require("../../validation/update");
 
 //Load User model
 const User = require("../../models/User");
@@ -105,5 +106,54 @@ router.post("/login", (req,res) => {
 		});
 	});
 });
+
+
+//@route POST api/user/getuser
+//@desc get user from id
+//@access Public
+router.post("/getuser", (req,res) => {
+	const userid = req.body.id;
+	console.log(req.body);
+
+	User.findOne({_id: userid}, function(err,user){
+		res.send(user);
+	})
+});
+
+
+//@route POST api/user/updateuser
+//@desc update user from id
+//@access Public
+router.post("/updateuser", (req, res) => {
+
+	//Form validation
+	const {errors, isValid} = validateUpdateInput(req.body);
+
+	//Check validation
+	if(!isValid) {
+		return res.status(400).json(errors);
+	}
+
+	const updateUser = {
+		username: req.body.username,
+		email: req.body.email
+	};
+
+	if(!(req.body.password === "")){
+		//Hash password before saving in database
+			bcrypt.genSalt(10, (err,salt) => {
+			bcrypt.hash(req.body.password, salt, (err,hash) => {
+				if(err) throw err;
+				updateUser["password"] = hash;
+				});
+			});
+	}
+
+
+	User.updateOne({_id: req.body.id}, updateUser)
+		.then(res => console.log(res.ok));
+
+});
+
 
 module.exports = router;

@@ -2,18 +2,9 @@ import React, {Component} from 'react';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 
-import { makeStyles } from '@material-ui/core/styles';
-
-import Backlog from '../Examples/BacklogExemple.json'
-import SprintBacklog from '../Examples/SprintBacklog.json'
-import Todo from '../Examples/Todo.json'
-import Doing from '../Examples/Doing.json'
-import ToTest from '../Examples/ToTest.json'
-import Done from '../Examples/Done.json'
 import { Button } from '@material-ui/core';
 import PropTypes from "prop-types";
 import {connect} from "react-redux";
-import classnames from "classnames";
 import axios from "axios";
 
 
@@ -80,7 +71,7 @@ class Board extends Component {
 						   </Paper>
 						))}
 					  </Grid>
-					  {(value.name == "Backlog")
+					  {(value.name === "Backlog")
 					  ?
 					  <Button>
 						+Add a Card
