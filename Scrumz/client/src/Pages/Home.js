@@ -4,6 +4,12 @@ import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import {Card, CardActionArea, CardContent, CardMedia, CardActions, Typography} from '@material-ui/core';
 import {Button } from '@material-ui/core';
+import TextField from '@material-ui/core/TextField';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
 import PropTypes from "prop-types";
 import {connect} from "react-redux";
 import {logoutUser} from "../actions/authActions";
@@ -28,7 +34,9 @@ class Home extends Component {
 		super();
 		this.state = {
 			boards: [],
-			errors: {}
+			errors: {},
+			newBoardDialogOpen : false,
+			newBoardName : "",
 		};
 	}
 
@@ -48,24 +56,53 @@ class Home extends Component {
 	  this.props.logoutUser();
   }
 
-	createNewBoard = e => {
-	  var id = this.props.auth.user.id;
-	  var newBoard = {
-		  name: `test Board`,
-		  columns: [],
-		  members: [id],
-		  manager: id,
-	  };
-	  this.onNewBoard(newBoard);
-  }
-
 	onNewBoard(newBoard){
 		axios.post("/api/boards/newboard", newBoard).then(res => {
 			var boards = this.state.boards;
 			boards.push(res.data);
 			this.setState({ boards: boards });
+			this.props.history.push(
+				{
+					pathname: "/board",
+					data:
+					{
+						id: res.data._id,
+						name: res.data.name,
+						columns: [],
+					}
+				}
+			);
 		})
   }
+
+	handleClickOpen = () => {
+		this.setState({ newBoardDialogOpen : true});
+	};
+
+	handleClose = () => {
+		this.setState({ newBoardDialogOpen: false });
+	};
+
+	onChange = e => {
+		this.setState({
+			[e.target.id]: e.target.value
+		});
+	};
+
+	onSubmit = e => {
+		e.preventDefault();
+
+		var id = this.props.auth.user.id;
+		var newBoard = {
+			name: this.state.newBoardName,
+			columns: [],
+			members: [id],
+			manager: id,
+		};
+		this.onNewBoard(newBoard);
+	};
+
+
 
 	render(){
 		const {classes}=this.props;
@@ -95,6 +132,7 @@ class Home extends Component {
 								data:
 								{
 									id: board._id,
+									name: board.name,
 									columns: board.columns,
 								}
 							})
@@ -107,25 +145,54 @@ class Home extends Component {
 		));
 
 		return (
-		  <div className="ok">
-			 <h1>Your Board</h1>
-			 <Button
-                    onClick={this.onLogoutClick}
+			<div className="ok">
+				<h1>Your Board</h1>
+				<Button
+					onClick={this.onLogoutClick}
                     variant="contained"
                     color="primary"
                 >
                     Logout
-              </Button>
-			  <Grid container spacing = {3} justify="center" alignItems = "center">
-			  	{boards}
-			  </Grid>
-			  <Button
-				onClick = {() => this.props.history.push("/newboard")}
-                variant="contained"
-                color="primary"
-              >
-              	new Board
-              </Button>
+				</Button>
+				<Grid container spacing = {3} justify="center" alignItems = "center">
+			  		{boards}
+				</Grid>
+				<Button
+					onClick={this.handleClickOpen}
+                	variant="contained"
+                	color="primary"
+            	>
+              		new Board
+            	</Button>
+				<Dialog open={this.state.newBoardDialogOpen} onClose={this.handleClose} aria-labelledby="form-dialog-title">
+					<DialogTitle id="form-dialog-title">Create a new board</DialogTitle>
+					<form noValidate onSubmit={this.onSubmit}>
+						<DialogContent>
+							<DialogContentText>
+								To create a new board, please enter the Name of the board here.
+							</DialogContentText>
+							<TextField
+								onChange={this.onChange}
+								value={this.state.newBoardName}
+								id= 'newBoardName'
+								variant="outlined"
+								margin="normal"
+								required
+								fullWidth
+								label="Name"
+								name="name"
+							/>
+						</DialogContent>
+						<DialogActions>
+							<Button onClick={this.handleClose} color="primary">
+								Cancel
+							</Button>
+							<Button type="submit" onClick={this.handleClose} color="primary">
+								Create
+							</Button>
+						</DialogActions>
+					</form>
+				</Dialog>
 		  </div>
 		);
 	}

@@ -111,8 +111,7 @@ class Register extends Component {
 	          	name = "username"
 	          	autoComplete = "username"
 	          	autoFocus
-	            /
-	            >
+	            />
 				<span className = "red-text">{errors.username}</span>
 	          <TextField
 			  	onChange = {this.onChange}

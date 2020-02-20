@@ -44,6 +44,7 @@ class Board extends Component {
 	}
 
 	componentDidMount(){
+		this.setState({id : this.props.location.data.id, name: this.props.location.data.name});
 		let columns = {ids: this.props.location.data.columns};
 		if (this.props.location.data.columns.length>0){
 			axios.post("/api/columns/getcolumns", columns)
@@ -93,44 +94,43 @@ class Board extends Component {
 	    //const [spacing, setSpacing] = React.useState(2);
 	    //const classes = useStyles();
 		return (
-			<Grid item xs={12}>
-			  <Grid container justify="center" spacing={3} >
-				{this.state.columns.map((value , index)=> (
-				  <Grid key={value._id} item>
-					<Paper>
-					  <h4>
-						{value.name}
-					  </h4>
-					  <Grid container justify="center" spacing={3}>
-
-						{
-						(value.tasks.length > 0) 
-						?
-						value.tasks.map(task=>(
-							<Paper elevation={6}>
-								<h4>
-									{task.name}
-								</h4>
-								{task.description}
-							</Paper>
-						))
-						:
-						null
-						}
-					  </Grid>
-					  {(index == 0)
-					  ?
-					  <Button>
-						+Add a Card
-					  </Button>
-					  :
-					  null}
-					</Paper>
-
-				  </Grid>
-				))}
-			  </Grid>
-			</Grid>
+			<div>
+				<h2>{this.state.name}</h2>
+				<Grid item xs={12}>
+					<Grid container justify="center" spacing={3} >
+						{this.state.columns.map((value, index) => (
+							<Grid key={value._id} item>
+								<Paper>
+									<h4>
+										{value.name}
+									</h4>
+									<Grid container justify="center" spacing={3}>
+										{(value.tasks.length > 0)
+										?
+										value.tasks.map(task => (
+											<Paper elevation={6}>
+												<h4>
+													{task.name}
+												</h4>
+												{task.description}
+											</Paper>
+										))
+										:
+										null}
+									</Grid>
+									{(index == 0)
+									?
+									<Button>
+										+Add a Card
+									</Button>
+									:
+									null}
+								</Paper>
+							</Grid>
+						))}
+					</Grid>
+				</Grid>
+			</div>
 		);
 	}
 
