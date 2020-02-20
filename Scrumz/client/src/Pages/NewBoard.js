@@ -1,21 +1,14 @@
 import React, { Component } from "react";
-import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
-import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
-import Grid from '@material-ui/core/Grid';
-import Box from '@material-ui/core/Box';
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
-import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
-import Container from '@material-ui/core/Container';
-import { Link, withRouter } from "react-router-dom";
+import Icon from '@material-ui/core/Grid';
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-import { loginUser } from "../actions/authActions";
 import classnames from "classnames";
+import axios from "axios";
+
 
 class NewBoard extends Component {
 
@@ -23,7 +16,11 @@ class NewBoard extends Component {
         super();
         this.state = {
             name: "",
-            columns: [],
+            columns: [{
+                name: '',
+                movableByMember: true,
+                limitation: 0
+            }],
             nbColumn : 2,
             members: [],
             manager: "",
@@ -41,13 +38,24 @@ class NewBoard extends Component {
         this.setState({ [e.target.id]: e.target.value });
     };
 
+    onChangeColumn = e => {
+        var id = e.target.id;
+        var key = e.target.key;
+        var columns = this.state.columns;
+        columns[key][id] = e.target.value;
+
+        this.setState({
+            columns : columns
+        });
+    };
+
 
     createNewBoard = e => {
         var id = this.props.auth.user.id;
         var newBoard = {
             name: `test Board`,
             columns: [],
-            nbcolumn : 1,
+            nbcolumn : 0,
             members: [id],
             manager: id,
         };
@@ -62,6 +70,15 @@ class NewBoard extends Component {
         })
     }
 
+    addColumn(nbColumn) {
+        var columns = this.state.columns;
+        columns.push({
+            name:"",
+            movableByMember : "true",
+            limitation : 0,
+        });
+        this.setState({ nbcolumn: nbColumn, columns : columns})
+    }
 
     onSubmit = e => {
 
@@ -76,15 +93,18 @@ class NewBoard extends Component {
         //we don't need to pass in this.props.history as a parameter
     };
 
-    column(){
-        const columninfo=[];
-        for (var i = 0; i < (this.props.order.rounds + 1); i++) {
+
+    render(){
+        const { errors } = this.state;
+        const columninfo = [];
+        for (var i = 0; i < this.state.nbColumn; i++) {
             columninfo.push(
                 <li>
                     <TextField
-                        onChange={this.onChange}
+                        onChange={this.onChangeColumn}
                         value={this.state.columns[i].name}
-                        id={`columns[${i}].name`}
+                        id='name'
+                        key = {i}
                         variant="outlined"
                         margin="normal"
                         required
@@ -97,8 +117,9 @@ class NewBoard extends Component {
                             <Checkbox
                                 checked={this.state.columns[i].movableByMembers}
                                 value={this.state.columns[i].movableByMembers}
-                                onChange={this.onChange}
-                                id={`columns[${i}].movableByMembers`}
+                                onChange={this.onChangeColumn}
+                                key = {i}
+                                id='movableByMembers'
                                 color="primary"
                             />
                         }
@@ -106,8 +127,9 @@ class NewBoard extends Component {
                     />
                     <TextField
                         value={this.state.columns[i].limitation}
-                        onChange={this.onChange}
-                        id={`columns[${i}].limitation`}
+                        onChange={this.onChangeColumn}
+                        id='limitation'
+                        key = {i}
                         label="Limitation"
                         type="number"
                         InputLabelProps={{
@@ -116,23 +138,19 @@ class NewBoard extends Component {
                     />
                 </li>
             );
-        }
-        return (
+        };
+        const {columns} = (
             <div>
                 <ul> 
                     {columninfo} 
                 </ul>
                 <Button
-                    onClick = {this.setState({nbcolumn : (this.state.nbColumn+1)})}
+                    onClick = {this.addColumn(this.setState.nbColumn)}
                 >
                     <Icon>add_circle</Icon>
                 </Button>
-            </div>
-        );
-    }
+            </div>);
 
-    render(){
-        const { errors } = this.state;
         return(
             <form noValidate onSubmit={this.onSubmit}>
                 <div>
@@ -152,23 +170,7 @@ class NewBoard extends Component {
                     />
                     <span className="red-text">{errors.email}</span>
                 </div>
-                <div>
-                    <TextField
-                        onChange={this.onChange}
-                        value={this.state.email}
-                        error={errors.email}
-                        className={classnames("", {
-                            invalid: errors.name
-                        })}
-                        variant="outlined"
-                        margin="normal"
-                        required
-                        fullWidth
-                        label="Name"
-                        name="name"
-                    />
-                    <span className="red-text">{errors.email}</span>
-                </div>
+               
 
             </form>
         );

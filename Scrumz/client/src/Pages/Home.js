@@ -120,7 +120,7 @@ class Home extends Component {
 			  	{boards}
 			  </Grid>
 			  <Button
-				onClick={this.createNewBoard}
+				onClick = {() => this.props.history.push("/newboard")}
                 variant="contained"
                 color="primary"
               >
