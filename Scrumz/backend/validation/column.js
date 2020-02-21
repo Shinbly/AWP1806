@@ -1,7 +1,7 @@
 const Validator = require("validator");
 const isEmpty = require("is-empty");
 
-module.exports = function validateTaskInput(data) {
+module.exports = function validateColumnInput(data) {
     let errors = {};
 
     //Convert empty fields to an empty string so we can use validator fuctions
@@ -9,7 +9,7 @@ module.exports = function validateTaskInput(data) {
 
     //name checks
     if (Validator.isEmpty(data.name)) {
-        errors.nameTask = "name field is required";
+        errors.nameColumn = "name field is required";
     }
 
     console.log(errors);

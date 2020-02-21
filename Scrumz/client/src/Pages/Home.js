@@ -1,7 +1,7 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import Grid from '@material-ui/core/Grid';
-import {Card, CardActionArea, CardContent, CardMedia, CardActions, Typography} from '@material-ui/core';
-import {Button } from '@material-ui/core';
+import { Card, CardActionArea, CardContent, CardMedia, CardActions, Typography } from '@material-ui/core';
+import { Button } from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -9,52 +9,52 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import PropTypes from "prop-types";
-import {connect} from "react-redux";
-import {logoutUser} from "../actions/authActions";
+import { connect } from "react-redux";
+import { logoutUser } from "../actions/authActions";
 import axios from "axios";
-import {withStyles} from '@material-ui/styles';
+import { withStyles } from '@material-ui/styles';
 
 import Texture from "../Assets/boardsImg/texture1.jpg";
 
 
 const styles = theme => ({
-   root: {
-     flexGrow: 1,
-   },
-   cards: {
-	   maxWidth: 345
-   }
+	root: {
+		flexGrow: 1,
+	},
+	cards: {
+		maxWidth: 345
+	}
 });
 
 class Home extends Component {
 
-	constructor(){
+	constructor() {
 		super();
 		this.state = {
 			boards: [],
 			errors: {},
-			newBoardDialogOpen : false,
-			newBoardName : "",
+			newBoardDialogOpen: false,
+			newBoardName: "",
 		};
 	}
 
-	componentDidMount(){
-		let user = {id: this.props.auth.user.id};
-			axios
-				.post("/api/boards/getboards", user)
-				.then(res => {
-					this.setState({boards: res.data});
-				 })
-				.catch(err =>{console.log(err)}
-				);
+	componentDidMount() {
+		let user = { id: this.props.auth.user.id };
+		axios
+			.post("/api/boards/getboards", user)
+			.then(res => {
+				this.setState({ boards: res.data });
+			})
+			.catch(err => { console.log(err) }
+			);
 	}
 
-  onLogoutClick = e => {
-	  e.preventDefault();
-	  this.props.logoutUser();
-  }
+	onLogoutClick = e => {
+		e.preventDefault();
+		this.props.logoutUser();
+	}
 
-	onNewBoard(newBoard){
+	onNewBoard(newBoard) {
 		axios.post("/api/boards/newboard", newBoard).then(res => {
 			var boards = this.state.boards;
 			boards.push(res.data);
@@ -71,10 +71,23 @@ class Home extends Component {
 				}
 			);
 		})
-  }
+	}
+
+	onDeleteBoard(boardId){
+		axios.post("/api/boards/deleteboard", {id : boardId}).then(res => {
+			if (res.data.success){
+				var boards = this.state.boards;
+				var idToRemove = boards.findIndex(element => { return (element._id === boardId) });
+				boards.splice(idToRemove,1);
+				this.setState({boards : boards});
+			}else{
+				console.log('not deleted');
+			}
+		});
+	}
 
 	handleClickOpen = () => {
-		this.setState({ newBoardDialogOpen : true});
+		this.setState({ newBoardDialogOpen: true });
 	};
 
 	handleClose = () => {
@@ -102,43 +115,46 @@ class Home extends Component {
 
 
 
-	render(){
-		const {classes}=this.props;
+	render() {
+		const { classes } = this.props;
 
 		console.log(this.state.boards);
 
 
 		const boards = this.state.boards.map(board => (
 			<Grid item key={board._id}>
-			<Card className={classes.cards} >
-				<CardActionArea>
-					<CardMedia
-						component="img"
-						alt="Texture"
-						height="140"
-						image={Texture}
-					/>
-				<CardContent>
-					<Typography>{board.name}</Typography>
-				</CardContent>
-				</CardActionArea>
-				<CardActions>
-					<Button size="small" color="primary"
-						onClick={() => this.props.history.push(
-							{
-								pathname: "/board",
-								data:
+				<Card className={classes.cards} >
+					<CardActionArea>
+						<CardMedia
+							component="img"
+							alt="Texture"
+							height="140"
+							image={Texture}
+						/>
+						<CardContent>
+							<Typography>{board.name}</Typography>
+						</CardContent>
+					</CardActionArea>
+					<CardActions>
+						<Button size="small" color="primary"
+							onClick={() => this.props.history.push(
 								{
-									id: board._id,
-									name: board.name,
-									columns: board.columns,
-								}
-							})
-					}>
-						See Board
-					</Button>
-				</CardActions>
-			</Card>
+									pathname: "/board",
+									data:
+									{
+										id: board._id,
+										name: board.name,
+										columns: board.columns,
+									}
+								})
+							}>
+								See Board
+						</Button>
+						<Button onClick={() => this.onDeleteBoard(board._id)}>
+							Delete Board
+						</Button>
+					</CardActions>
+				</Card>
 			</Grid>
 		));
 
@@ -147,20 +163,20 @@ class Home extends Component {
 				<h1>Your Board</h1>
 				<Button
 					onClick={this.onLogoutClick}
-                    variant="contained"
-                    color="primary"
-                >
-                    Logout
+					variant="contained"
+					color="primary"
+				>
+					Logout
 				</Button>
-				<Grid container spacing = {3} justify="center" alignItems = "center">
-			  		{boards}
+				<Grid container spacing={3} justify="center" alignItems="center">
+					{boards}
 				</Grid>
 				<Button
 					onClick={this.handleClickOpen}
-                	variant="contained"
-                	color="primary"
-            	>
-              		new Board
+					variant="contained"
+					color="primary"
+				>
+					new Board
             	</Button>
 				<Dialog open={this.state.newBoardDialogOpen} onClose={this.handleClose} aria-labelledby="form-dialog-title">
 					<DialogTitle id="form-dialog-title">Create a new board</DialogTitle>
@@ -172,7 +188,7 @@ class Home extends Component {
 							<TextField
 								onChange={this.onChange}
 								value={this.state.newBoardName}
-								id= 'newBoardName'
+								id='newBoardName'
 								variant="outlined"
 								margin="normal"
 								required
@@ -191,7 +207,7 @@ class Home extends Component {
 						</DialogActions>
 					</form>
 				</Dialog>
-		  </div>
+			</div>
 		);
 	}
 }
@@ -207,6 +223,6 @@ const mapStateToProps = state => ({
 });
 
 export default withStyles(styles)(connect(
-    mapStateToProps,
-    {logoutUser}
+	mapStateToProps,
+	{ logoutUser }
 )(Home));

@@ -45,7 +45,7 @@ router.post("/newtask", (req, res) => {
         acceptance: false,
         test: req.body.test,
     }, function (err, task) {
-        if (err) return handleError(err);
+        if (err) return console.log(err);
         res.send(task);
     });
 });

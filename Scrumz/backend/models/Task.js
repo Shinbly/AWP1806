@@ -10,11 +10,11 @@ const TaskSchema = new Schema(
         }, 
         description: {
             type: String,
-            required: true
+            required: false
         },
         assignTeamMembers: {
             type: [String],
-            required: true
+            required: false
         },
         duration: {
             type: Number,

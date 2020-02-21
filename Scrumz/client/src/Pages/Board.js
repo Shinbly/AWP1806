@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
+import classnames from "classnames";
 
 import { Button, FormControlLabel, Checkbox } from '@material-ui/core';
 import PropTypes from "prop-types";
@@ -12,7 +13,6 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import {KeyboardDatePicker} from '@material-ui/pickers';
 
 // const useStyles = makeStyles(theme => ({
 //   colomn: {
@@ -36,19 +36,21 @@ class Board extends Component {
 			id: "",
 			name: "",
 			columns: [],
-			newColumnDialogOpen : false,
+			newColumnDialogOpen: false,
 			newColumnName: '',
 			newColumnIsMovable: true,
 			newColumnLimitation: 0,
 
 			newTaskDialogOpen: false,
-			newTaskName : "",
-			newTaskDescription : '',
+			newTaskName: "",
+			newTaskDescription: '',
 			newTaskDuration: 0,
-			newTaskDeadLine: null,
+			newTaskDeadLine: '',
 			newTaskPriority: 2,
 			newTaskTest: '',
 
+
+			errors: {},
 
 
 		};
@@ -118,9 +120,9 @@ class Board extends Component {
 
 		var newColumn = {
 			name: this.state.newColumnName,
-			tasks : [],
+			tasks: [],
 			movableByMembers: this.state.newColumnIsMovable,
-			limitation : this.state.newColumnLimitation,
+			limitation: this.state.newColumnLimitation,
 		};
 
 		this.onNewColumn(newColumn);
@@ -130,13 +132,22 @@ class Board extends Component {
 		axios.post("/api/columns/newcolumn", newColumn).then(res => {
 			var columns = this.state.columns;
 			columns.push(res.data);
-			this.setState({ 
+			this.setState({
 				columns: columns,
 				newColumnDialogOpen: false,
 				newColumnName: '',
 				newColumnIsMovable: true,
 				newColumnLimitation: 0,
 			});
+			var listColumnId = columns.map(column => { return column._id });
+			var updateBoard = {
+				id: this.state.id,
+				columns: listColumnId,
+			}
+			console.log('updateboard', updateBoard);
+			axios.post('/api/board/updateboard', updateBoard);
+		}).catch(err => {
+			console.log(err);
 		})
 	};
 
@@ -157,38 +168,49 @@ class Board extends Component {
 			description: this.state.newTaskDescription,
 			assignTeamMembers: [],
 			duration: this.state.newTaskDuration,
-			deadLine : this.state.newTaskDeadLine,
-			priority : this.state.newTaskPriority,
-			acceptance : false,
-			test : this.state.newTaskTest,
+			deadLine: this.state.newTaskDeadLine,
+			priority: this.state.newTaskPriority,
+			acceptance: false,
+			test: this.state.newTaskTest,
 		};
 
 		this.onNewTask(newColumn);
 	};
 
 	onNewTask(newTask) {
-		axios.post("/api/tasks/newtask", newTask).then(res => {
-			var columns = this.state.columns;
-			columns[0].tasks.push(res.data);
-			this.setState({ 
-				columns: columns ,
-				newTaskDialogOpen: false,
-				newTaskName: "",
-				newTaskDescription: '',
-				newTaskDuration: 0,
-				newTaskDeadLine: null,
-				newTaskPriority: 2,
-				newTaskTest: '',
-			});
-		})
+		axios.post("/api/tasks/newtask", newTask)
+			.then(res => {
+				var columns = this.state.columns;
+				columns[0].tasks.push(res.data);
+				this.setState({
+					columns: columns,
+					newTaskDialogOpen: false,
+					newTaskName: "",
+					newTaskDescription: '',
+					newTaskDuration: 0,
+					newTaskDeadLine: null,
+					newTaskPriority: 2,
+					newTaskTest: '',
+				});
+				var listTaskId = columns[0].tasks.map(task => { return task._id });
+				var updateColumn = {
+					id: columns[0]._id,
+					tasks: listTaskId,
+				}
+				console.log('updateColumn',updateColumn);
+				axios.post('/api/columns/updatecolumn', updateColumn);
+			})
+			.catch(err => {
+				console.log(err);
+			})
 	};
-	
+
 
 
 
 
 	render() {
-
+		const { errors } = this.state;
 		//const [spacing, setSpacing] = React.useState(2);
 		//const classes = useStyles();
 		return (
@@ -206,7 +228,7 @@ class Board extends Component {
 										{(value.tasks.length > 0)
 											?
 											value.tasks.map(task => (
-												<Paper elevation={6}>
+												<Paper key={`task:${value._id}_${task._id}`} elevation={6}>
 													<h4>
 														{task.name}
 													</h4>
@@ -235,8 +257,8 @@ class Board extends Component {
 				>
 					New column
             	</Button>
-				<Dialog open={this.state.newColumnDialogOpen} onClose={this.ColumnhandleClose} aria-labelledby="form-dialog-title">
-					<DialogTitle id="form-dialog-title">Create a new board</DialogTitle>
+				<Dialog open={this.state.newColumnDialogOpen} onClose={this.ColumnhandleClose} aria-labelledby="form-dialog-columntitle">
+					<DialogTitle id="form-dialog-columntitle">Create a new board</DialogTitle>
 					<form noValidate onSubmit={this.onColumnSubmit}>
 						<DialogContent>
 							<DialogContentText>
@@ -285,9 +307,8 @@ class Board extends Component {
 						</DialogActions>
 					</form>
 				</Dialog>
-
-				<Dialog open={this.state.newTaskDialogOpen} onClose={this.taskhandleClose} aria-labelledby="form-dialog-title">
-					<DialogTitle id="form-dialog-title">Create a new board</DialogTitle>
+				<Dialog open={this.state.newTaskDialogOpen} onClose={this.taskhandleClose} aria-labelledby="form-dialog-tasktitle">
+					<DialogTitle id="form-dialog-tasktitle">Create a new board</DialogTitle>
 					<form noValidate onSubmit={this.onTaskSubmit}>
 						<DialogContent>
 							<DialogContentText>
@@ -297,6 +318,9 @@ class Board extends Component {
 								onChange={this.onChange}
 								value={this.state.newTaskName}
 								id='newTaskName'
+								className={classnames("", {
+									invalid: errors.nameTask
+								})}
 								variant="outlined"
 								margin="normal"
 								required
@@ -304,6 +328,7 @@ class Board extends Component {
 								label="Name"
 								name="name"
 							/>
+							<span className="red-text">{errors.nameTask}</span>
 							<TextField
 								onChange={this.onChange}
 								value={this.state.newTaskDescription}
@@ -330,7 +355,6 @@ class Board extends Component {
 								id="newTaskDeadLine"
 								label="DeadLine"
 								type="datetime-local"
-								defaultValue="2017-05-24T10:30"
 								InputLabelProps={{
 									shrink: true,
 								}}
@@ -356,6 +380,7 @@ class Board extends Component {
 						</DialogActions>
 					</form>
 				</Dialog>
+
 			</div>
 		);
 	}
