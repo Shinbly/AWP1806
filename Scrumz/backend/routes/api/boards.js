@@ -40,6 +40,18 @@ router.post("/getboards", (req,res) => {
 
 	})
 });
+
+//@route POST api/boards/getboardbyid
+router.post("/getboardbyid", (req,res)=>{
+	console.log('getboardbyid', req.body);
+
+	Board.findById(req.body.id, function(err,board){
+		if (err) return console.log(err);
+		console.log(board);
+		res.send(board);
+	})
+});
+
 //@route POST api/boards/newboard
 router.post("/newboard", (req, res) => {
 	console.log('newBoard', req.body);
@@ -49,29 +61,32 @@ router.post("/newboard", (req, res) => {
 		members : req.body.members,
 		manager : req.body.manager,
 		archived_tasks : [],
-		logs: ["Creation of the Board"],
+		logs: [`Creation of the Board : ${req.body.name}`],
 	}, function(err,board){
 		if (err) return console.log(err);
 		res.send(board);
 	});
 });
 
+//@route POST api/boards/updateboard
 router.post("/updateboard", (req, res) => {
 	console.log('Update Board', req.body);
 
 	update = {};
-	if (req.body.columns != null)
-		update['columns'] = req.body.columns;
-	if (req.body.members != null)
-		update['members'] = req.body.members;
-	if(res.body.archived_tasks != null)
-		update['archived_task'] = req.body.archived_task;
-	if(res.body.logs != null)
-		update['logs'] = req.body.logs;
-	
+	if (req.body.columns)
+		update.columns = req.body.columns;
+	if (req.body.members)
+		update.members = req.body.members;
+	if(req.body.archived_tasks)
+		update.archived_tasks = req.body.archived_tasks;
+	if(req.body.logs)
+		update.logs = req.body.logs;
 
 
-	Board.findByIdAndUpdate(req.body.id,update);
+
+	Board.findByIdAndUpdate(req.body.id,update).then(() => {
+		res.send({success: true});
+	});;
 });
 
 router.post("/deleteboard",(req,res) =>{
@@ -89,7 +104,7 @@ router.post("/deleteboard",(req,res) =>{
 				});
 			});
 		});
-	}).then(() => { 
+	}).then(() => {
 		res.send({success: true});
 	});
 });
