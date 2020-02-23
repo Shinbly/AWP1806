@@ -118,9 +118,6 @@ class Home extends Component {
 	render() {
 		const { classes } = this.props;
 
-		console.log(this.state.boards);
-
-
 		const boards = this.state.boards.map(board => (
 			<Grid item key={board._id}>
 				<Card className={classes.cards} >

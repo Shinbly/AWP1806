@@ -57,9 +57,22 @@ router.post("/updatecolumn", (req, res) => {
     if (req.body.movableByMembers != null)
         update.movableByMembers = req.body.movableByMembers;
     if (req.body.limitation != null)
-        update.name = req.body.limitation;
+        update.limitation = req.body.limitation;
     Column.findByIdAndUpdate(req.body.id, update)
-        .then(res => res.send(res.ok));
+        .then(() => {res.send({success: true})});
+});
+
+router.post("deletecolumn",(req,res)=>{
+	console.log('Delete Column', req.body);
+	Column.findByIdAndRemove(req.body.id, function(err,column) {
+		if (err) return console.log(err);
+		var taskIds = column.tasks;
+		return taskIds.forEach((taskId) => {
+			Task.findByIdAndRemove(taskId);
+		});
+	}).then(() => {
+		res.send({success: true});
+	});
 });
 
 
