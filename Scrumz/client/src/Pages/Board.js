@@ -15,7 +15,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 
 // const useStyles = makeStyles(theme => ({
-//   colomn: {
+//   column: {
 //     width: 170,
 //   },
 //   task: {
@@ -37,12 +37,17 @@ class Board extends Component {
             board: {},
             name: "",
             columns: [],
+
+            textDialog: "",
+
             newColumnDialogOpen: false,
+            ColumnDialogId: "",
             newColumnName: '',
             newColumnIsMovable: true,
             newColumnLimitation: 0,
 
             newTaskDialogOpen: false,
+            TaskDialogId: "",
             newTaskName: "",
             newTaskDescription: '',
             newTaskDuration: 0,
@@ -55,46 +60,46 @@ class Board extends Component {
     }
 
     componentDidMount() {
-		axios.post("/api/boards/getboardbyid", {id:this.props.location.data.id}).then(res => {
-			console.log('board : ', res.data);
-			this.setState({board: res.data});
-		}).catch(err => {
-			console.log(err)
-		});
-		this.setState({id: this.props.location.data.id, name: this.props.location.data.name});
+        axios.post("/api/boards/getboardbyid", {id: this.props.location.data.id}).then(res => {
+            console.log('board : ', res.data);
+            this.setState({board: res.data});
+        }).catch(err => {
+            console.log(err)
+        });
+        this.setState({id: this.props.location.data.id, name: this.props.location.data.name});
 
         let columns = {
             ids: this.props.location.data.columns
         };
         if (this.props.location.data.columns.length > 0) {
-			this.getcolumns(columns).then(res=>{
-				this.setState({columns: res});
-			}).catch(err => {
-				console.log(err)
-			});
+            this.getcolumns(columns).then(res => {
+                this.setState({columns: res});
+            }).catch(err => {
+                console.log(err)
+            });
 
         }
 
     }
-	async getcolumns(columnids){
-		return axios.post("/api/columns/getcolumns", columnids).then(async res => {
-			return Promise.all(res.data.map(column => {
-				if (column.tasks.length > 0) {
+    async getcolumns(columnids) {
+        return axios.post("/api/columns/getcolumns", columnids).then(async res => {
+            return Promise.all(res.data.map(column => {
+                if (column.tasks.length > 0) {
 
-					return axios.post("api/tasks/gettasks", {ids: column.tasks}).then(async res => {
-						return ({_id: column._id, name: column.name, tasks: res.data, movableByMembers: column.movableByMembers, limitation: column.limitation});
-					});
-				} else {
-					return ({_id: column._id, name: column.name, tasks: [], movableByMembers: column.movableByMembers, limitation: column.limitation});
-				}
+                    return axios.post("api/tasks/gettasks", {ids: column.tasks}).then(async res => {
+                        return ({_id: column._id, name: column.name, tasks: res.data, movableByMembers: column.movableByMembers, limitation: column.limitation});
+                    });
+                } else {
+                    return ({_id: column._id, name: column.name, tasks: [], movableByMembers: column.movableByMembers, limitation: column.limitation});
+                }
 
-			})).then((res) => {
-				return res;
-			});
-		}).catch(err => {
-			console.log(err)
-		});
-	}
+            })).then((res) => {
+                return res;
+            });
+        }).catch(err => {
+            console.log(err)
+        });
+    }
 
     onChange = e => {
         this.setState({
@@ -103,7 +108,23 @@ class Board extends Component {
     };
 
     ColumnhandleClickOpen = () => {
-        this.setState({newColumnDialogOpen: true});
+        //used to create a new column
+        this.setState({newColumnDialogOpen: true, ColumnDialogId: null, textDialog: "To create a new column, please enter the Name of the column here."});
+
+    };
+
+    ColumnhandleClickModify = (columnindex) => {
+
+        //used to modify a column
+        var column = this.state.columns[columnindex];
+        this.setState({
+            newColumnDialogOpen: true,
+            ColumnDialogId: column._id,
+            newColumnName: column.name,
+            newColumnIsMovable: column.movableByMembers,
+            newColumnLimitation: column.limitation,
+            textDialog: 'You can modify the value of the column here.'
+        });
     };
 
     ColumnhandleClose = () => {
@@ -119,18 +140,37 @@ class Board extends Component {
             movableByMembers: this.state.newColumnIsMovable,
             limitation: this.state.newColumnLimitation
         };
-        var boardId = this.state.id;
-        this.onNewColumn(newColumn, boardId);
-    };
+		if(this.state.ColumnDialogId ===null){
 
+			var boardId = this.state.id;
+			this.onNewColumn(newColumn, boardId);
+		}else{
+			this.onUpdateColumn()
+		}
+    };
+	onUpdateColumn(updateColumn, id){
+		var update = updateColumn;
+		update.id = id;
+		axios.post("/api/columns/updatecolumn", update).then(res => {
+			var columns = this.state.columns;
+			columns.forEach((column, i) => {
+					if(column._id === id){
+						columns[i].name = updateColumn.name;
+						columns[i].movableByMembers= updateColumn.newColumnIsMovable;
+			            columns[i].limitation= updateColumn.newColumnLimitation;
+					}
+			});
+			this.setState({columns : columns});
+		});
+	}
     onNewColumn(newColumn, boardId) {
         var boardId = this.state.id;
         axios.post("/api/columns/newcolumn", newColumn).then(res => {
             var columns = this.state.columns;
             columns.push(res.data);
             this.setState({columns: columns, newColumnDialogOpen: false, newColumnName: '', newColumnIsMovable: true, newColumnLimitation: 0});
-			var board = this.state.board;
-			var listColumnId = board.columns;
+            var board = this.state.board;
+            var listColumnId = board.columns;
             listColumnId.push(res.data._id);
             var newLogs = board.logs;
             newLogs.push(`creation of the column ${res.data.name}`);
@@ -139,22 +179,39 @@ class Board extends Component {
                 columns: listColumnId,
                 logs: newLogs
             }
-			board.columns = listColumnId;
-			board.logs = newLogs;
+            board.columns = listColumnId;
+            board.logs = newLogs;
 
             axios.post('/api/boards/updateboard', updateBoard).then(res => {
                 console.log('board updated', res.data.newboard);
-				this.setState({board : board});
-			}).catch(err => {
-	            console.log(err);
-	        });
+                this.setState({board: board});
+            }).catch(err => {
+                console.log(err);
+            });
         }).catch(err => {
             console.log(err);
         })
     };
 
     TaskhandleClickOpen = () => {
-        this.setState({newTaskDialogOpen: true});
+
+        this.setState({newTaskDialogOpen: true, textDialog: "To create a new task, please fill the value here.", TaskDialogId: null});
+
+    };
+
+    TaskhandleClickModify = (columnindex, taskindex) => {
+        var task = this.state.columns[columnindex].tasks[taskindex];
+        this.setState({
+            newTaskDialogOpen: true,
+            textDialog: "You can modify the value of the task here.",
+            TaskDialogId: task._id,
+            newTaskName: task.name,
+            newTaskDescription: task.description,
+            newTaskDuration: task.duration,
+            newTaskDeadLine: task.deadLine,
+            newTaskPriority: task.priority,
+            newTaskTest: task.test
+        });
     };
 
     TaskhandleClose = () => {
@@ -164,7 +221,7 @@ class Board extends Component {
     onTaskSubmit = e => {
         e.preventDefault();
 
-        var newColumn = {
+        var newTask = {
             name: this.state.newTaskName,
             description: this.state.newTaskDescription,
             assignTeamMembers: [],
@@ -175,9 +232,33 @@ class Board extends Component {
             test: this.state.newTaskTest
         };
 
-        this.onNewTask(newColumn);
-    };
+		if(this.state.TaskDialogId === null){
+			this.onNewTask(newTask);
+		}else{
+			this.onUpdateTask(newTask, this.state.TaskDialogId);
+		}
 
+    };
+	onUpdateTask(updateTask, id){
+		var update = updateTask;
+		update.id = id;
+		axios.post("/api/tasks/updatetask", update).then(res => {
+			var columns = this.state.columns;
+			var indexColumn = null;
+			var indexTask = null;
+			columns.forEach((column, iC) => {
+				column.tasks.forEach((task, iT) => {
+					if(task._id === id){
+						indexColumn = iC;
+						indexTask = iT;
+					}
+				});
+			});
+			columns[indexColumn].tasks[indexTask] = updateTask;
+			this.setState({columns : columns});
+
+		})
+	}
     onNewTask(newTask) {
         axios.post("/api/tasks/newtask", newTask).then(res => {
             var columns = this.state.columns;
@@ -206,31 +287,68 @@ class Board extends Component {
         })
     };
 
-	onTaskMove(taskId, fromColumnId, toColumnId){
-		var fromColumn = null;
-		var toColumn = null;
-		var columns = this.state.columns;
-		for (var i = 0 ; i < columns.length || (fromColumn == null || toColumn == null) ; i++){
-			if(columns[i]._id === fromColumnId){
-				fromColumn = i;
-			}
-			if(columns[i]._id === toColumnId){
-				toColumn = i;
-			}
-		}
-		var taskIndex = null;
-		columns[fromColumn].tasks.forEach((task, i) => {
-			if(task._id === taskId){
-				taskIndex = i;
-			}
-		});
+    onTaskMove(taskId, fromColumnId, toColumnId) {
+        var fromColumn = null;
+        var toColumn = null;
+        var columns = this.state.columns;
+        for (var i = 0; i < columns.length || (fromColumn == null || toColumn == null); i++) {
+            if (columns[i]._id === fromColumnId) {
+                fromColumn = i;
+            }
+            if (columns[i]._id === toColumnId) {
+                toColumn = i;
+            }
+        }
+        var taskIndex = null;
+        columns[fromColumn].tasks.forEach((task, i) => {
+            if (task._id === taskId) {
+                taskIndex = i;
+            }
+        });
 
-		columns[toColumn].tasks.push(columns[fromColumn].tasks[taskIndex]);
-		columns[fromColumn].tasks.splice(taskIndex,1);
-		this.setState({
-			columns : columns
-		})
-	}
+        columns[toColumn].tasks.push(columns[fromColumn].tasks[taskIndex]);
+        columns[fromColumn].tasks.splice(taskIndex, 1);
+
+        var fromTaskIds = columns[fromColumn].tasks.map(task => {
+            return task._id;
+        });
+        var updateFromColumn = {
+            id: fromColumnId,
+            tasks: fromTaskIds
+        }
+        axios.post('/api/columns/updatecolumn', updateFromColumn);
+
+        var toTaskIds = columns[toColumn].tasks.map(task => {
+            return task._id;
+        });
+        var updateToColumn = {
+            id: toColumnId,
+            tasks: toTaskIds
+        }
+        axios.post('/api/columns/updatecolumn', updateToColumn);
+        var log = (`The task : "${columns[toColumn].tasks[columns[toColumn].tasks.length - 1].name}" has been moved from "${columns[fromColumn].name}" to "${columns[toColumn].name}"`);
+        console.log(log);
+        this.addLogs(log);
+        this.setState({columns: columns});
+    }
+
+    addLogs(log) {
+        var board = this.state.board;
+        var newLogs = board.logs;
+        newLogs.push(log);
+        var updateBoard = {
+            id: board._id,
+            logs: newLogs
+        }
+        board.logs = newLogs;
+
+        axios.post('/api/boards/updateboard', updateBoard).then(res => {
+            this.setState({board: board});
+        }).catch(err => {
+            console.log(err);
+        });
+
+    }
 
     render() {
         const {errors} = this.state;
@@ -238,44 +356,48 @@ class Board extends Component {
         //const classes = useStyles();
         return (<div>
             <h2>{this.state.name}</h2>
-                <Grid container justify="center" spacing={3}>
-                    {
-                        this.state.columns.map((value, index) => (<Grid key={value._id} item>
-                            <Paper>
-                                <h4>
-                                    {value.name}
-                                </h4>
-                                <Grid container justify="center" spacing={3}>
-                                    {
-                                        (value.tasks.length > 0)
-                                            ? value.tasks.map(task => (<Paper key={`task:${value._id}_${task._id}`} elevation={6}>
-                                                <h4>
-                                                    {task.name}
-                                                </h4>
-                                                {task.description}
-												<Button disabled = {index == 0} onClick = {()=>{this.onTaskMove(task._id,value._id,this.state.columns[index-1]._id)}}
-												>
-												preview
-												</Button>
-												<Button disabled = {index == this.state.columns.length -1} onClick = {()=>{this.onTaskMove(task._id,value._id,this.state.columns[index+1]._id)}}
-												>
-												next
-												</Button>
-                                            </Paper>))
-                                            : null
-                                    }
-                                </Grid>
-                                {(index === 0)
-                                    ?
-									<Button onClick={this.TaskhandleClickOpen}color="primary">
-                                    	+Add a Card
-                                    </Button>
-                                    :
-									null
+            <Grid container="container" justify="center" spacing={3}>
+                {
+                    this.state.columns.map((value, index) => (<Grid key={value._id} item="item">
+                        <Paper>
+                            <h4>
+                                {value.name}
+                            </h4>
+                            {
+                                (value.limitation > 0)
+                                    ? <h1>
+                                            {`${value.tasks.length} / ${value.limitation}`}
+                                        </h1>
+                                    : null
+                            }
+                            <Grid container="container" justify="center" spacing={3}>
+                                {
+                                    (value.tasks.length > 0)
+                                        ? value.tasks.map(task => (<Paper key={`task:${value._id}_${task._id}`} elevation={6}>
+                                            <h4>
+                                                {task.name}
+                                            </h4>
+                                            {task.description}
+                                            <Button disabled = {index == 0} onClick = {()=>{this.onTaskMove(task._id,value._id,this.state.columns[index-1]._id)}}>
+                                                preview
+                                            </Button>
+                                            <Button disabled = {index == this.state.columns.length -1} onClick= {()=>{this.onTaskMove(task._id,value._id,this.state.columns[index+1]._id)}}>
+                                                next
+                                            </Button>
+                                        </Paper>))
+                                        : null
                                 }
-                            </Paper>
-                        </Grid>))
-                    }
+                            </Grid>
+                            {
+                                (index === 0)
+                                    ? <Button color="primary" onClick={this.TaskhandleClickOpen}>
+                                            +Add a Card
+                                        </Button>
+                                    : null
+                            }
+                        </Paper>
+                    </Grid>))
+                }
             </Grid>
             <Button onClick={this.ColumnhandleClickOpen} variant="contained" color="primary">
                 New column
@@ -285,7 +407,7 @@ class Board extends Component {
                 <form noValidate="noValidate" onSubmit={this.onColumnSubmit}>
                     <DialogContent>
                         <DialogContentText>
-                            To create a new column, please enter the Name of the column here.
+                            {this.state.textDialog}
                         </DialogContentText>
                         <TextField onChange={this.onChange} value={this.state.newColumnName} id='newColumnName' variant="outlined" margin="normal" required="required" fullWidth="fullWidth" label="Name" name="name"/>
                         <FormControlLabel control={<Checkbox
@@ -307,7 +429,7 @@ class Board extends Component {
                             Cancel
                         </Button>
                         <Button type="submit" onClick={this.ColumnhandleClose} color="primary">
-                            Create
+                            Confirm
                         </Button>
                     </DialogActions>
                 </form>
@@ -317,7 +439,7 @@ class Board extends Component {
                 <form noValidate="noValidate" onSubmit={this.onTaskSubmit}>
                     <DialogContent>
                         <DialogContentText>
-                            To create a new task, please fill the value here.
+                            {this.state.textDialog}
                         </DialogContentText>
                         <TextField onChange={this.onChange} value={this.state.newTaskName} id='newTaskName' className={classnames("", {invalid: errors.nameTask})} variant="outlined" margin="normal" required="required" fullWidth="fullWidth" label="Name" name="name"/>
                         <span className="red-text">{errors.nameTask}</span>
@@ -335,7 +457,7 @@ class Board extends Component {
                             Cancel
                         </Button>
                         <Button type="submit" onClick={this.TaskhandleClose} color="primary">
-                            Create
+                            Confirm
                         </Button>
                     </DialogActions>
                 </form>
