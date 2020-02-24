@@ -3,7 +3,8 @@ import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import classnames from "classnames";
 
-import {Button, FormControlLabel, Checkbox} from '@material-ui/core';
+import EditIcon from '@material-ui/icons/Edit';
+import {Button,Fab, FormControlLabel, Checkbox} from '@material-ui/core';
 import PropTypes from "prop-types";
 import {connect} from "react-redux";
 import axios from "axios";
@@ -38,6 +39,7 @@ class Board extends Component {
             name: "",
             columns: [],
 
+			titleDialog:"",
             textDialog: "",
 
             newColumnDialogOpen: false,
@@ -109,7 +111,11 @@ class Board extends Component {
 
     ColumnhandleClickOpen = () => {
         //used to create a new column
-        this.setState({newColumnDialogOpen: true, ColumnDialogId: null, textDialog: "To create a new column, please enter the Name of the column here."});
+        this.setState({
+			newColumnDialogOpen: true,
+			ColumnDialogId: null,
+			titleDialog : 'Create a new column',
+			textDialog: "To create a new column, please enter the Name of the column here."});
 
     };
 
@@ -123,6 +129,7 @@ class Board extends Component {
             newColumnName: column.name,
             newColumnIsMovable: column.movableByMembers,
             newColumnLimitation: column.limitation,
+			titleDialog: 'Modify the Column',
             textDialog: 'You can modify the value of the column here.'
         });
     };
@@ -145,7 +152,7 @@ class Board extends Component {
 			var boardId = this.state.id;
 			this.onNewColumn(newColumn, boardId);
 		}else{
-			this.onUpdateColumn()
+			this.onUpdateColumn(newColumn,this.state.ColumnDialogId);
 		}
     };
 	onUpdateColumn(updateColumn, id){
@@ -195,7 +202,11 @@ class Board extends Component {
 
     TaskhandleClickOpen = () => {
 
-        this.setState({newTaskDialogOpen: true, textDialog: "To create a new task, please fill the value here.", TaskDialogId: null});
+        this.setState({
+			newTaskDialogOpen: true,
+			titleDialog : 'Create a new Task.',
+			textDialog: "To create a new task, please fill the value here.",
+			TaskDialogId: null});
 
     };
 
@@ -203,6 +214,7 @@ class Board extends Component {
         var task = this.state.columns[columnindex].tasks[taskindex];
         this.setState({
             newTaskDialogOpen: true,
+			titleDialog: 'Modify the Task',
             textDialog: "You can modify the value of the task here.",
             TaskDialogId: task._id,
             newTaskName: task.name,
@@ -242,7 +254,8 @@ class Board extends Component {
 	onUpdateTask(updateTask, id){
 		var update = updateTask;
 		update.id = id;
-		axios.post("/api/tasks/updatetask", update).then(res => {
+		axios.post("/api/tasks/updatetask", update)
+		.then(res => {
 			var columns = this.state.columns;
 			var indexColumn = null;
 			var indexTask = null;
@@ -254,10 +267,12 @@ class Board extends Component {
 					}
 				});
 			});
+			updateTask._id = id;
 			columns[indexColumn].tasks[indexTask] = updateTask;
 			this.setState({columns : columns});
 
 		})
+		.catch(err=>{console.log(err);});
 	}
     onNewTask(newTask) {
         axios.post("/api/tasks/newtask", newTask).then(res => {
@@ -356,26 +371,34 @@ class Board extends Component {
         //const classes = useStyles();
         return (<div>
             <h2>{this.state.name}</h2>
-            <Grid container="container" justify="center" spacing={3}>
+            <Grid container justify="center" spacing={3}>
                 {
-                    this.state.columns.map((value, index) => (<Grid key={value._id} item="item">
-                        <Paper>
-                            <h4>
+                    this.state.columns.map((value, index) => (
+					<Grid key={value._id} item>
+                        <Paper variant="outlined" square >
+                            <h3>
                                 {value.name}
-                            </h4>
-                            {
-                                (value.limitation > 0)
-                                    ? <h1>
-                                            {`${value.tasks.length} / ${value.limitation}`}
-                                        </h1>
-                                    : null
-                            }
-                            <Grid container="container" justify="center" spacing={3}>
+								<Fab onClick = {()=>{this.ColumnhandleClickModify(index)}} color="inherit" size="small" aria-label="edit">
+								  <EditIcon />
+								</Fab>
+                            </h3>
+							{(value.limitation > 0) ?
+								<h6>
+									{`${value.tasks.length} / ${value.limitation}`}
+								</h6>
+								: null
+							}
+
+
                                 {
                                     (value.tasks.length > 0)
-                                        ? value.tasks.map(task => (<Paper key={`task:${value._id}_${task._id}`} elevation={6}>
+                                        ? value.tasks.map((task, taskIndex) => (
+										<Paper key={`task:${value._id}_${task._id}`} elevation={6}>
                                             <h4>
                                                 {task.name}
+												<Fab onClick = {()=>{this.TaskhandleClickModify(index,taskIndex )}} color="inherit" size="small" aria-label="edit">
+												  <EditIcon />
+												</Fab>
                                             </h4>
                                             {task.description}
                                             <Button disabled = {index == 0} onClick = {()=>{this.onTaskMove(task._id,value._id,this.state.columns[index-1]._id)}}>
@@ -384,13 +407,14 @@ class Board extends Component {
                                             <Button disabled = {index == this.state.columns.length -1} onClick= {()=>{this.onTaskMove(task._id,value._id,this.state.columns[index+1]._id)}}>
                                                 next
                                             </Button>
-                                        </Paper>))
+                                        </Paper>
+										)
+									)
                                         : null
                                 }
-                            </Grid>
                             {
                                 (index === 0)
-                                    ? <Button color="primary" onClick={this.TaskhandleClickOpen}>
+                                    ? <Button color="secondary" variant="contained" onClick={this.TaskhandleClickOpen}>
                                             +Add a Card
                                         </Button>
                                     : null
@@ -403,26 +427,44 @@ class Board extends Component {
                 New column
             </Button>
             <Dialog open={this.state.newColumnDialogOpen} onClose={this.ColumnhandleClose} aria-labelledby="form-dialog-columntitle">
-                <DialogTitle id="form-dialog-columntitle">Create a new board</DialogTitle>
+                <DialogTitle id="form-dialog-columntitle">
+					{this.state.titleDialog}
+				</DialogTitle>
                 <form noValidate="noValidate" onSubmit={this.onColumnSubmit}>
                     <DialogContent>
                         <DialogContentText>
                             {this.state.textDialog}
                         </DialogContentText>
-                        <TextField onChange={this.onChange} value={this.state.newColumnName} id='newColumnName' variant="outlined" margin="normal" required="required" fullWidth="fullWidth" label="Name" name="name"/>
-                        <FormControlLabel control={<Checkbox
-                            value = {
-                                this.state.newColumnIsMovable
-                            }
-                            onChange = {
-                                this.onChange
-                            }
-                            id = 'newColumnIsMovable'
-                            color = "primary"
-                            />} label="Movable By Members"/>
-                        <TextField value={this.state.newColumnLimitation} onChange={this.onChange} id='newColumnLimitation' label="Limitation" type="number" InputLabelProps={{
+                        <TextField
+							onChange={this.onChange}
+							value={this.state.newColumnName}
+							id='newColumnName'
+							variant="outlined"
+							margin="normal"
+							required
+							fullWidth
+							label="Name"
+							name="name"/>
+                        <FormControlLabel
+							control=
+							{<Checkbox
+                            	value = {this.state.newColumnIsMovable}
+                            	onChange = {this.onChange}
+                            	id = 'newColumnIsMovable'
+                            	color = "primary"
+                            />}
+							label="Movable By Members"
+						/>
+                        <TextField
+							value={this.state.newColumnLimitation}
+							onChange={this.onChange}
+							id='newColumnLimitation'
+							label="Limitation"
+							type="number"
+							InputLabelProps={{
                                 shrink: true
-                            }}/>
+                            }}
+						/>
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={this.ColumnhandleClose} color="primary">
@@ -435,22 +477,67 @@ class Board extends Component {
                 </form>
             </Dialog>
             <Dialog open={this.state.newTaskDialogOpen} onClose={this.taskhandleClose} aria-labelledby="form-dialog-tasktitle">
-                <DialogTitle id="form-dialog-tasktitle">Create a new board</DialogTitle>
+                <DialogTitle id="form-dialog-tasktitle">
+					{this.state.titleDialog}
+				</DialogTitle>
                 <form noValidate="noValidate" onSubmit={this.onTaskSubmit}>
                     <DialogContent>
                         <DialogContentText>
                             {this.state.textDialog}
                         </DialogContentText>
-                        <TextField onChange={this.onChange} value={this.state.newTaskName} id='newTaskName' className={classnames("", {invalid: errors.nameTask})} variant="outlined" margin="normal" required="required" fullWidth="fullWidth" label="Name" name="name"/>
+                        <TextField
+							onChange={this.onChange}
+							value={this.state.newTaskName}
+							id='newTaskName'
+							className={classnames("", {invalid: errors.nameTask})}
+							variant="outlined"
+							margin="normal"
+							required
+							fullWidth
+							label="Name"
+							name="name"
+						/>
                         <span className="red-text">{errors.nameTask}</span>
-                        <TextField onChange={this.onChange} value={this.state.newTaskDescription} id='newTaskDescription' variant="outlined" margin="normal" fullWidth="fullWidth" label="Description" name="Description"/>
-                        <TextField value={this.state.newTaskDuration} onChange={this.onChange} id='newTaskDuration' label="duration (in min)" type="number" InputLabelProps={{
+                        <TextField
+							onChange={this.onChange}
+							value={this.state.newTaskDescription}
+							id='newTaskDescription'
+							variant="outlined"
+							margin="normal"
+							fullWidth
+							label="Description"
+							name="Description"
+						/>
+                        <TextField
+							value={this.state.newTaskDuration}
+							onChange={this.onChange}
+							id='newTaskDuration'
+							label="duration (in min)"
+							type="number"
+							InputLabelProps={{
                                 shrink: true
-                            }}/>
-                        <TextField onChange={this.onChange} value={this.state.newTaskDeadLine} id="newTaskDeadLine" label="DeadLine" type="datetime-local" InputLabelProps={{
+                            }}
+						/>
+                        <TextField
+							onChange={this.onChange}
+							value={this.state.newTaskDeadLine}
+							id="newTaskDeadLine"
+							label="DeadLine"
+							type="datetime-local"
+							InputLabelProps={{
                                 shrink: true
-                            }}/>
-                        <TextField onChange={this.onChange} value={this.state.newTaskTest} id='newTaskTest' variant="outlined" margin="normal" fullWidth="fullWidth" label="Test" name="Test"/>
+                            }}
+						/>
+                        <TextField
+							onChange={this.onChange}
+							value={this.state.newTaskTest}
+							id='newTaskTest'
+							variant="outlined"
+							margin="normal"
+							fullWidth
+							label="Test"
+							name="Test"
+						/>
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={this.TaskhandleClose} color="primary">

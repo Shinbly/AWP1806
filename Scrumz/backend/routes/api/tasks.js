@@ -50,7 +50,7 @@ router.post("/newtask", (req, res) => {
     });
 });
 
-router.post("updatetask",(req,res)=>{
+router.post("/updatetask",(req,res)=>{
 	console.log('update task', req.body);
 	update = {};
     if (req.body.name)
