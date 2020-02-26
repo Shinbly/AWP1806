@@ -2,9 +2,11 @@ import React, {Component} from 'react';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import classnames from "classnames";
+import { Card, CardActionArea, CardContent, CardHeader, CardMedia, CardActions, Typography } from '@material-ui/core';
 
 import EditIcon from '@material-ui/icons/Edit';
-import {Button,Fab, FormControlLabel, Checkbox} from '@material-ui/core';
+import MoreVertIcon from '@material-ui/icons/MoreVert';
+import {GridList, GridListTile , Button, IconButton, Fab, FormControlLabel, Checkbox} from '@material-ui/core';
 import PropTypes from "prop-types";
 import {connect} from "react-redux";
 import axios from "axios";
@@ -14,20 +16,33 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import { withStyles } from '@material-ui/styles';
+import { sizing } from '@material-ui/system';
 
-// const useStyles = makeStyles(theme => ({
-//   column: {
-//     width: 170,
-//   },
-//   task: {
-//     paddingBlock : 10,
-//     backgroundColor : "lighblue",
-//     width: 145,
-//   },
-//   control: {
-//       padding: theme.spacing(4),
-//   },
-// }));
+const styles = theme => ({
+  column: {
+    width: 170,
+  },
+  task: {
+    paddingBlock : 10,
+    backgroundColor : "lighblue",
+    width: "90%",
+    margin: "auto",
+    marginBottom: 10,
+  },
+  paperColumn: {
+      background: "#eeeeee",
+  },
+  gridList: {
+    flexWrap: 'nowrap',
+    // Promote the list into his own layer on Chrome. This cost memory but helps keeping high FPS.
+    transform: 'translateZ(0)',
+  },
+  gridTile: {
+      maxWidth: "100%",
+      height: "100% !important",
+  }
+});
 
 class Board extends Component {
 
@@ -171,7 +186,6 @@ class Board extends Component {
 		});
 	}
     onNewColumn(newColumn, boardId) {
-        var boardId = this.state.id;
         axios.post("/api/columns/newcolumn", newColumn).then(res => {
             var columns = this.state.columns;
             columns.push(res.data);
@@ -366,22 +380,26 @@ class Board extends Component {
     }
 
     render() {
+        const { classes } = this.props;
+
         const {errors} = this.state;
         //const [spacing, setSpacing] = React.useState(2);
         //const classes = useStyles();
         return (<div>
             <h2>{this.state.name}</h2>
-            <Grid container justify="center" spacing={3}>
+            <GridList className={classes.gridList} cols={3}>
                 {
                     this.state.columns.map((value, index) => (
-					<Grid key={value._id} item>
-                        <Paper variant="outlined" square >
-                            <h3>
-                                {value.name}
-								<Fab onClick = {()=>{this.ColumnhandleClickModify(index)}} color="inherit" size="small" aria-label="edit">
-								  <EditIcon />
-								</Fab>
-                            </h3>
+					<GridListTile className={classes.gridTile} key={value._id} item>
+                        <Card width={500} className={classes.paperColumn} >
+                        <CardHeader
+                            action={
+                              <IconButton onClick = {()=>{this.ColumnhandleClickModify(index)}} size="small" aria-label="settings">
+                                <MoreVertIcon />
+                              </IconButton>
+                            }
+                            title={value.name}
+                          />
 							{(value.limitation > 0) ?
 								<h6>
 									{`${value.tasks.length} / ${value.limitation}`}
@@ -393,36 +411,38 @@ class Board extends Component {
                                 {
                                     (value.tasks.length > 0)
                                         ? value.tasks.map((task, taskIndex) => (
-										<Paper key={`task:${value._id}_${task._id}`} elevation={6}>
-                                            <h4>
-                                                {task.name}
-												<Fab onClick = {()=>{this.TaskhandleClickModify(index,taskIndex )}} color="inherit" size="small" aria-label="edit">
-												  <EditIcon />
-												</Fab>
-                                            </h4>
+										<Card className={classes.task} key={`task:${value._id}_${task._id}`} elevation={6}>
+                                            <CardHeader
+                                                action={
+                                                  <IconButton onClick = {()=>{this.TaskhandleClickModify(index,taskIndex )}} size="small" aria-label="settings">
+                                                    <EditIcon />
+                                                  </IconButton>
+                                                }
+                                                title={task.name}
+                                              />
                                             {task.description}
-                                            <Button disabled = {index == 0} onClick = {()=>{this.onTaskMove(task._id,value._id,this.state.columns[index-1]._id)}}>
+                                            <Button disabled = {index === 0} onClick = {()=>{this.onTaskMove(task._id,value._id,this.state.columns[index-1]._id)}}>
                                                 preview
                                             </Button>
-                                            <Button disabled = {index == this.state.columns.length -1} onClick= {()=>{this.onTaskMove(task._id,value._id,this.state.columns[index+1]._id)}}>
+                                            <Button disabled = {index === this.state.columns.length -1} onClick= {()=>{this.onTaskMove(task._id,value._id,this.state.columns[index+1]._id)}}>
                                                 next
                                             </Button>
-                                        </Paper>
+                                        </Card>
 										)
 									)
                                         : null
                                 }
                             {
                                 (index === 0)
-                                    ? <Button color="secondary" variant="contained" onClick={this.TaskhandleClickOpen}>
+                                    ? <Button onClick={this.TaskhandleClickOpen}>
                                             +Add a Card
                                         </Button>
                                     : null
                             }
-                        </Paper>
-                    </Grid>))
+                        </Card>
+                    </GridListTile >))
                 }
-            </Grid>
+            </GridList>
             <Button onClick={this.ColumnhandleClickOpen} variant="contained" color="primary">
                 New column
             </Button>
@@ -557,9 +577,10 @@ class Board extends Component {
 
 Board.propTypes = {
     auth: PropTypes.object.isRequired,
-    errors: PropTypes.object.isRequired
+    errors: PropTypes.object.isRequired,
+    classes: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = state => ({auth: state.auth, errors: state.errors});
 
-export default connect(mapStateToProps)(Board);
+export default withStyles(styles)(connect(mapStateToProps)(Board));
