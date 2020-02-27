@@ -1,12 +1,9 @@
 import React, {Component} from 'react';
-import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
 import classnames from "classnames";
-import { Card, CardActionArea, CardContent, CardHeader, CardMedia, CardActions, Typography } from '@material-ui/core';
-
+import { Card, CardHeader } from '@material-ui/core';
 import EditIcon from '@material-ui/icons/Edit';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
-import {GridList, GridListTile , Button, IconButton, Fab, FormControlLabel, Checkbox} from '@material-ui/core';
+import {GridList, GridListTile , Button, IconButton, FormControlLabel, Checkbox} from '@material-ui/core';
 import PropTypes from "prop-types";
 import {connect} from "react-redux";
 import axios from "axios";
@@ -17,7 +14,6 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { withStyles } from '@material-ui/styles';
-import { sizing } from '@material-ui/system';
 
 const styles = theme => ({
   column: {
@@ -387,7 +383,7 @@ class Board extends Component {
         //const classes = useStyles();
         return (<div>
             <h2>{this.state.name}</h2>
-            <GridList className={classes.gridList} cols={3}>
+            <GridList className={classes.gridList} cols={5}>
                 {
                     this.state.columns.map((value, index) => (
 					<GridListTile className={classes.gridTile} key={value._id} item>

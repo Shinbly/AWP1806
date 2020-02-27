@@ -9,7 +9,6 @@ import jwt_decode from "jwt-decode";
 import setAuthToken from "./utils/setAuthToken";
 import {setCurrentUser, logoutUser} from "./actions/authActions";
 
-import Header from './Components/Header';
 import Login from './Pages/Login';
 import Register from './Pages/Register';
 import Home from './Pages/Home';
@@ -143,7 +142,6 @@ class App extends Component {
 		  <Provider store={store}>
 		    <Router>
 		      <div className="App">
-		        <Header/>
 				  <Route exact path = "/" component = {Login}/>
 		          <Route path = "/login" component = {Login}/>
 		          <Route path = "/register" component = {Register}/>

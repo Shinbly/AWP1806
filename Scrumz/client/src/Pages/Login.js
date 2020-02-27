@@ -1,7 +1,6 @@
 import React, {Component} from "react";
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
-import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
@@ -12,6 +11,25 @@ import PropTypes from "prop-types";
 import {connect} from "react-redux";
 import {loginUser} from "../actions/authActions";
 import classnames from "classnames";
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import IconButton from '@material-ui/core/IconButton';
+import MenuIcon from '@material-ui/icons/Menu';
+import { withStyles } from '@material-ui/styles';
+
+
+const styles = theme => ({
+	root: {
+		flexGrow: 1,
+	},
+	title: {
+		flexGrow: 1,
+	},
+    formulaire: {
+        maxWidth: 100,
+        margin: "auto",
+    }
+});
 
  class Login extends Component {
 
@@ -63,6 +81,8 @@ import classnames from "classnames";
 	render() {
 		const{errors} = this.state;
 
+        const { classes } = this.props;
+
 		return (
 
 			// const useStyles = makeStyles(theme => ({
@@ -87,12 +107,18 @@ import classnames from "classnames";
 
 
 			//const classes = useStyles();
-
-
-
-		<Container component="main" maxWidth="xs">
-		  <CssBaseline />
-		  <div className="ok">
+<div className={classes.root}>
+                <AppBar position="static">
+                    <Toolbar>
+                        <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
+                            <MenuIcon />
+                        </IconButton>
+                        <Typography variant="h6" className={classes.title}>
+                            Scrumz
+              </Typography>
+                    </Toolbar>
+                </AppBar>
+                <Container maxWidth="xs" className="formulaire">
 			<Avatar className="ok">
 			  <LockOutlinedIcon />
 			</Avatar>
@@ -153,8 +179,8 @@ import classnames from "classnames";
 				Sign In
 			  </Button>
 			</form>
+            </Container>
 		  </div>
-		</Container>
 	  );
 	}
 }
@@ -162,7 +188,8 @@ import classnames from "classnames";
 Login.propTypes = {
 	loginUser: PropTypes.func.isRequired,
 	auth: PropTypes.object.isRequired,
-	errors: PropTypes.object.isRequired
+	errors: PropTypes.object.isRequired,
+    classes: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = state => ({
@@ -170,7 +197,7 @@ const mapStateToProps = state => ({
 	errors: state.errors
 });
 
-export default connect(
+export default withStyles(styles)(connect(
 	mapStateToProps,
 	{loginUser}
-)(Login);
+)(Login));
