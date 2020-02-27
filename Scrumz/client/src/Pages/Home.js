@@ -171,10 +171,13 @@ class Home extends Component {
 						</IconButton>
 						<Typography variant="h6" className={classes.title}>
 							Scrumz
-			  </Typography>
+			  			</Typography>
 						<Button onClick={this.onLogoutClick} color="inherit">
 							Logout
-			  </Button>
+			  			</Button>
+			  			<Button onClick={() => {this.props.history.push("/profile")}} color="inherit">
+				  			Profile
+				  		</Button>
 					</Toolbar>
 				</AppBar>
 				<h1>Your Board</h1>
