@@ -12,6 +12,10 @@ import {connect} from "react-redux";
 import {registerUser} from "../actions/authActions";
 import classnames from "classnames";
 import {withStyles} from '@material-ui/styles';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import IconButton from '@material-ui/core/IconButton';
+import MenuIcon from '@material-ui/icons/Menu';
 
 
 	const styles = theme => ({
@@ -22,6 +26,12 @@ import {withStyles} from '@material-ui/styles';
 	  },
 	  submit: {
 	  },
+	  root: {
+  		flexGrow: 1,
+  	},
+  	title: {
+  		flexGrow: 1,
+  	},
 	});
 
 
@@ -75,7 +85,23 @@ class Register extends Component {
 	render() {
 	  const {errors} = this.state;
 
+	  const { classes } = this.props;
+
 	  return (
+		  <div className={classes.root}>
+  			<AppBar position="static">
+  				<Toolbar>
+  					<IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
+  						<MenuIcon />
+  					</IconButton>
+  					<Typography variant="h6" className={classes.title}>
+  						Scrumz
+            </Typography>
+  					<Button href='/login' color="inherit">
+  						Login
+            </Button>
+  				</Toolbar>
+  			</AppBar>
 	    <Container component="main" maxWidth="xs">
 	      <CssBaseline />
 	      <div className="ok">
@@ -171,6 +197,8 @@ class Register extends Component {
 	        </form>
 	      </div>
 	    </Container>
+
+	</div>
 	  );
   }
 }

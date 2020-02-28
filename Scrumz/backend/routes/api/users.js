@@ -120,6 +120,18 @@ router.post("/getuser", (req,res) => {
 	})
 });
 
+//@route POST api/user/getuserfromemail
+//@desc get user from email
+//@access Public
+router.post("/getuserfromemail", (req,res) => {
+	const email = req.body.email;
+	console.log(req.body.email);
+
+	User.findOne({email: email}, function(err,user){
+		res.send(user);
+	})
+});
+
 
 //@route POST api/user/updateuser
 //@desc update user from id

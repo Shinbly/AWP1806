@@ -10,6 +10,10 @@ import {connect} from "react-redux";
 import classnames from "classnames";
 import {withStyles} from '@material-ui/styles';
 import axios from "axios";
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import IconButton from '@material-ui/core/IconButton';
+import MenuIcon from '@material-ui/icons/Menu';
 
 
 const styles = theme => ({
@@ -20,6 +24,12 @@ const styles = theme => ({
   },
   submit: {
   },
+  root: {
+    flexGrow: 1,
+},
+title: {
+    flexGrow: 1,
+},
 });
 
 
@@ -72,7 +82,20 @@ class Profile extends Component {
 	render(){
 		const {errors} = this.state;
 
+        const { classes } = this.props;
+
 		return(
+            <div className={classes.root}>
+    			<AppBar position="static">
+    				<Toolbar>
+    					<IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
+    						<MenuIcon />
+    					</IconButton>
+    					<Typography variant="h6" className={classes.title}>
+    						Scrumz
+              </Typography>
+    				</Toolbar>
+    			</AppBar>
 			<Container component="main" maxWidth="xs">
 			  <CssBaseline />
 			  <div className="ok">
@@ -160,6 +183,7 @@ class Profile extends Component {
 				</form>
 			  </div>
 			</Container>
+            </div>
 		);
 	}
 }

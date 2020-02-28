@@ -14,6 +14,10 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { withStyles } from '@material-ui/styles';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import MenuIcon from '@material-ui/icons/Menu';
 
 const styles = theme => ({
   column: {
@@ -37,7 +41,13 @@ const styles = theme => ({
   gridTile: {
       maxWidth: "100%",
       height: "100% !important",
-  }
+  },
+  root: {
+      flexGrow: 1,
+  },
+  title: {
+      flexGrow: 1,
+  },
 });
 
 class Board extends Component {
@@ -67,6 +77,9 @@ class Board extends Component {
             newTaskDeadLine: '',
             newTaskPriority: 2,
             newTaskTest: '',
+
+            addMemberDialogOpen: false,
+            newMemberEmail : "",
 
             errors: {}
         };
@@ -375,13 +388,91 @@ class Board extends Component {
 
     }
 
+    MembershandleClose = () => {
+        this.setState({addMemberDialogOpen: false});
+    };
+
+    MembershandleClickOpen = () => {
+        this.setState({
+            addMemberDialogOpen: true,
+            titleDialog: 'Add a new Member',
+            textDialog: "Type the address mail of the member you whant to add.",
+        });
+    };
+
+    onMemberSubmit = e => {
+        e.preventDefault();
+
+        var newMember = {
+            email: this.state.newMemberEmail,
+        };
+
+        this.addMembers(newMember);
+
+    }
+
+
+    addMembers(user){
+        var isAMember = false;
+        //Verify that the member exists
+        axios.post('api/users/getuserfromemail', user).then(res => {
+            //If it exist we verify that he is not already a member of the board
+            const members = this.state.board.members;
+
+            members.forEach((member, index) => {
+                if(member === res.data._id){
+                    isAMember = true;
+                    console.log(member);
+                    console.log(res.data._id);
+                }
+
+                if(index == members.length-1){
+                    if (isAMember) {
+                        console.log("already a member");
+                    }else{
+                        var newMembers = this.state.board.members;
+
+                        newMembers.push(res.data._id);
+
+                        const update = {
+                            id: this.state.id,
+                            members: newMembers,
+                        };
+                        axios.post('api/boards/addmember', update).then(res => {
+                            console.log(res);
+                            var newBoard = this.state.board;
+                            newBoard.members = newMembers;
+                            this.setState({board: newBoard});
+                        }).catch(err => {
+                            console.log(err);
+                        })
+                    }
+                }
+            });
+
+        }).catch(err => {
+            console.log(err);
+        });
+
+    }
+
     render() {
         const { classes } = this.props;
 
         const {errors} = this.state;
         //const [spacing, setSpacing] = React.useState(2);
         //const classes = useStyles();
-        return (<div>
+        return (<div className={classes.root}>
+                        <AppBar position="static">
+                            <Toolbar>
+                                <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
+                                    <MenuIcon />
+                                </IconButton>
+                                <Typography variant="h6" className={classes.title}>
+                                    Scrumz
+                      </Typography>
+                            </Toolbar>
+                        </AppBar>
             <h2>{this.state.name}</h2>
             <GridList className={classes.gridList} cols={5}>
                 {
@@ -442,6 +533,40 @@ class Board extends Component {
             <Button onClick={this.ColumnhandleClickOpen} variant="contained" color="primary">
                 New column
             </Button>
+            <Button onClick={this.MembershandleClickOpen} variant="contained" color="primary">
+                Add members
+            </Button>
+            <Dialog open={this.state.addMemberDialogOpen} onClose={this.MembershandleClose} aria-labelledby="form-dialog-columntitle">
+                <DialogTitle id="form-dialog-columntitle">
+					{this.state.titleDialog}
+				</DialogTitle>
+                <form noValidate="noValidate" onSubmit={this.onMemberSubmit}>
+                    <DialogContent>
+                        <DialogContentText>
+                            {this.state.textDialog}
+                        </DialogContentText>
+                        <TextField
+							onChange={this.onChange}
+							value={this.state.newMemberEmail}
+							id='newMemberEmail'
+							variant="outlined"
+							margin="normal"
+							required
+							fullWidth
+							label="Email address"
+							name="email"/>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={this.MembershandleClose} color="primary">
+                            Cancel
+                        </Button>
+                        <Button type="submit" onClick={this.MembershandleClose} color="primary">
+                            Confirm
+                        </Button>
+                    </DialogActions>
+                </form>
+            </Dialog>
+
             <Dialog open={this.state.newColumnDialogOpen} onClose={this.ColumnhandleClose} aria-labelledby="form-dialog-columntitle">
                 <DialogTitle id="form-dialog-columntitle">
 					{this.state.titleDialog}

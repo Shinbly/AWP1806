@@ -25,10 +25,6 @@ const styles = theme => ({
 	title: {
 		flexGrow: 1,
 	},
-    formulaire: {
-        maxWidth: 100,
-        margin: "auto",
-    }
 });
 
  class Login extends Component {
