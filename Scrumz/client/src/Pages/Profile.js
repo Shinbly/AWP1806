@@ -4,6 +4,7 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
+import Avatar from '@material-ui/core/Avatar';
 import {withRouter} from "react-router-dom";
 import PropTypes from "prop-types";
 import {connect} from "react-redux";
@@ -103,6 +104,7 @@ class Profile extends Component {
 				  Update personal informations
 				</Typography>
 				<form noValidate onSubmit={this.onSubmit}>
+          <Avatar alt={this.state.username} src="../Assets/UserProfile.png" />
 				  <TextField
 					onChange={this.onChange}
 					value = {this.state.username}
