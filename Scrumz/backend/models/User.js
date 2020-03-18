@@ -16,7 +16,10 @@ const UserSchema = new Schema (
 			type: String,
 			required: true
 		},
-		//profile_picture_url: String
+		Avatar : {
+			type : String,
+			required : false
+		}
 	});
 
 module.exports = User = mongoose.model("users", UserSchema);

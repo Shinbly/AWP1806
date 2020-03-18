@@ -20,6 +20,7 @@ import MenuIcon from '@material-ui/icons/Menu';
 
 import Texture from "../Assets/boardsImg/texture1.jpg";
 
+import { BoardServices } from '../Models/BoardServices';
 
 const styles = theme => ({
 	root: {
@@ -46,9 +47,7 @@ class Home extends Component {
 	}
 
 	componentDidMount() {
-		let user = { id: this.props.auth.user.id };
-		axios
-			.post("/api/boards/getboards", user)
+		BoardServices.getBoardByUser(this.props.auth.user.id)
 			.then(res => {
 				this.setState({ boards: res.data });
 			})
@@ -62,7 +61,7 @@ class Home extends Component {
 	}
 
 	onNewBoard(newBoard) {
-		axios.post("/api/boards/newboard", newBoard).then(res => {
+		BoardServices.newboard(newBoard).then(res => {
 			var boards = this.state.boards;
 			boards.push(res.data);
 			this.setState({ boards: boards });
@@ -81,7 +80,7 @@ class Home extends Component {
 	}
 
 	onDeleteBoard(boardId){
-		axios.post("/api/boards/deleteboard", {id : boardId}).then(res => {
+		BoardServices.deleteBoard(boardId).then(res => {
 			if (res.data.success){
 				var boards = this.state.boards;
 				var idToRemove = boards.findIndex(element => { return (element._id === boardId) });

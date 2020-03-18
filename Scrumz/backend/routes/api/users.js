@@ -120,6 +120,17 @@ router.post("/getuser", (req,res) => {
 	})
 });
 
+//@route POST api/user/getusers
+//@desc get users from ids
+//@access Public
+router.post("/getusers", (req, res) => {
+	const userids = req.body.ids;
+	console.log(req.body);
+	User.find().where('_id').in(userids).exec((err, users) => {
+		res.send(users);
+	})
+});
+
 //@route POST api/user/getuserfromemail
 //@desc get user from email
 //@access Public
@@ -129,7 +140,7 @@ router.post("/getuserfromemail", (req,res) => {
 
 	User.findOne({email: email}, function(err,user){
 		res.send(user);
-	})
+	});
 });
 
 
@@ -150,6 +161,9 @@ router.post("/updateuser", (req, res) => {
 		username: req.body.username,
 		email: req.body.email
 	};
+	if(req.body.avatar != null){
+		updateUser["avatar"] = req.body.avatar;
+	}
 
 	if(!(req.body.password === "")){
 		//Hash password before saving in database
