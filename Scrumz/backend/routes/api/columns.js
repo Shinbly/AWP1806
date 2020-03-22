@@ -11,7 +11,7 @@ const Column = require("../../models/Column");
 //@access Public
 router.post("/getcolumns", (req, res) => {
     const columnids = req.body.ids;
-    console.log(req.body);
+    console.log('getcolumns ', req.body);
     var columnList = [];
     Column.find().where('_id').in(columnids).exec((err, columns) => {
         if (columns.length > 0) {
@@ -20,6 +20,19 @@ router.post("/getcolumns", (req, res) => {
             });
             res.send(columnList);
         }
+    });
+
+});
+
+//@route POST api/columns/getcolumntaskid
+//@desc Get column where the task is
+//@access Public
+router.post("/getcolumntaskid", (req, res) => {
+    const taskId = req.body.taskId;
+    console.log('getcolumntaskid ',req.body);
+    Column.findOne({'tasks': taskId}).exec((err, column) => {
+        console.log(column);
+        res.send(column);
     });
 
 });

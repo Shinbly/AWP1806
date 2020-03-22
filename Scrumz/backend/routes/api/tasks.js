@@ -11,7 +11,7 @@ const Task = require("../../models/Task");
 //@access Public
 router.post("/gettasks", (req, res) => {
     const taskids = req.body.ids;
-    console.log(req.body.ids);
+    console.log('gettask ', req.body.ids);
     var taskList = [];
     Task.find().where('_id').in(taskids).exec((err, tasks) => {
         tasks.forEach((task) => {
@@ -26,7 +26,7 @@ router.post("/gettasks", (req, res) => {
 
 //@route POST api/tasks/newtask
 router.post("/newtask", (req, res) => {
-    console.log('new task', req.body);
+    console.log('new task ', req.body);
     //Form validation
     const { errors, isValid } = validateTaskInput(req.body);
 
@@ -51,7 +51,7 @@ router.post("/newtask", (req, res) => {
 });
 
 router.post("/updatetask",(req,res)=>{
-	console.log('update task', req.body);
+	console.log('update task ', req.body);
 	update = {};
     if (req.body.name)
         update.name = req.body.name;
@@ -82,7 +82,7 @@ router.post("/updatetask",(req,res)=>{
 });
 
 router.post('deletetask',(req,res)=>{
-	console.log('delete task', req.body);
+	console.log('delete task ', req.body);
 	Task.findByIdAndRemove(req.body.id, function(err,column) {
 		if (err) return console.log(err);
 	}).then(() => {

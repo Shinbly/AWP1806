@@ -14,4 +14,8 @@ export class ColumnServices {
         return axios.post("/api/columns/newcolumn", newColumn);
     }
 
+    static async getColumnByTaskId(id){
+        return axios.post("/api/columns/getcolumntaskid", {taskId : id});
+    }
+
 }

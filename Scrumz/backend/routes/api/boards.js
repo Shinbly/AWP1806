@@ -43,7 +43,7 @@ router.post("/getboards", (req,res) => {
 
 //@route POST api/boards/getboardbyid
 router.post("/getboardbyid", (req,res)=>{
-	console.log('getboardbyid', req.body);
+	console.log('getboardbyid ', req.body);
 
 	Board.findById(req.body.id, function(err,board){
 		if (err) return console.log(err);
@@ -54,7 +54,7 @@ router.post("/getboardbyid", (req,res)=>{
 
 //@route POST api/boards/newboard
 router.post("/newboard", (req, res) => {
-	console.log('newBoard', req.body);
+	console.log('newBoard ', req.body);
 	Board.create({
 		name : req.body.name,
 		columns : req.body.columns,
@@ -70,7 +70,7 @@ router.post("/newboard", (req, res) => {
 
 //@route POST api/boards/updateboard
 router.post("/updateboard", (req, res) => {
-	console.log('Update Board', req.body);
+	console.log('Update Board ', req.body);
 
 	update = {};
 	if (req.body.columns)
@@ -90,7 +90,7 @@ router.post("/updateboard", (req, res) => {
 });
 
 router.post("/deleteboard",(req,res) =>{
-	console.log('Delete Board', req.body);
+	console.log('Delete Board ', req.body);
 	var Boardid = req.body.id;
 	Board.findByIdAndRemove(Boardid, function (err, board) {
 		if (err) return console.log(err);
