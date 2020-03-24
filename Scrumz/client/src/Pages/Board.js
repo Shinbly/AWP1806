@@ -9,7 +9,6 @@ import AvatarGroup from '@material-ui/lab/AvatarGroup';
 import Tooltip from '@material-ui/core/Tooltip';
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-import axios from "axios";
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -42,17 +41,12 @@ const styles = theme => ({
 		margin: "auto",
 		marginBottom: 10,
 	},
-	draggableTask: {
-		margin: 0,
-		padding: 0,
-		width: '100%',
-	},
 	draggableColumn: {
 		margin: 0,
 		padding: 0,
-		width: '100%',
 		minHeight: '100px',
-		height: '110%',
+		height: '130%',
+		background: "#ffaaaa",
 	},
 	paperColumn: {
 		background: "#eeeeee",
@@ -113,33 +107,40 @@ class Board extends Component {
 		};
 	}
 
-	componentDidMount() {
-
-		BoardServices.getboardbyid(this.props.location.data.id).then(board => {
+	getForUpdate(boardId){
+		BoardServices.getboardbyid(boardId).then(board => {
 			console.log('board : ', board.data);
-			//this.setState({ board: board.data });
-			UserServices.getUsersbyIds(board.data.members).then((res) => {
-				console.log(res);
-				this.setState({ board: board.data, members: res.data });
+			this.setState({ 
+				board: board.data,
+				id: board.data._id,
+				name: board.data.name
 			});
+			UserServices.getUsersbyIds(board.data.members).then((res) => {
+				this.setState({
+					members: res.data
+				});
+			});
+			if (board.data.columns.length > 0) {
+				this.getcolumns(board.data.columns).then(res => {
+					this.setState({
+						columns: res
+					});
+				}).catch(err => {
+					console.log(err)
+				});
+
+			}
 		}).catch(err => {
 			console.log(err)
 		});
+	}
 
-		this.setState({ id: this.props.location.data.id, name: this.props.location.data.name });
-
-		let columns = {
-			ids: this.props.location.data.columns
-		};
-		if (this.props.location.data.columns.length > 0) {
-			this.getcolumns(columns).then(res => {
-				this.setState({ columns: res });
-			}).catch(err => {
-				console.log(err)
-			});
-
+	componentDidMount() {
+		try{
+			this.getForUpdate(this.props.location.data.id);
+		}catch(e){
+			this.props.history.push("/home");
 		}
-
 	}
 	async getcolumns(columnids) {
 		return ColumnServices.getColumns(columnids).then(async res => {
@@ -503,21 +504,26 @@ class Board extends Component {
 
 	}
 
-	taskRecieved(toColumnId, taskId) {
-		console.log('id = '+taskId);
-		ColumnServices.getColumnByTaskId(taskId).then((columnRes) => {
-			var fromColumn = columnRes.data;
-			console.log(taskId, fromColumn._id, toColumnId);
-			TaskServices.onTaskMoveFromTo(taskId, fromColumn._id, toColumnId).then((res) => {
-				console.log('move' ,res.data);
+	taskRecieved(columnId, taskId) {
+		if(columnId!= null){
+			var toColumnId = columnId.split("_")[0];
+			var index = parseInt(columnId.split("_")[1]);
+			ColumnServices.getColumnByTaskId(taskId).then((columnRes) => {
+				var fromColumn = columnRes.data;
+				console.log("move");
+				if (fromColumn._id != toColumnId){
+					var move={
+						taskId: taskId,
+						fromColumnId: fromColumn._id,
+						toColumnId : toColumnId,
+						index : index,
+					}
+					TaskServices.onTaskMoveFromTo(move).then((res) => {
+						console.log('move' ,res);
+					});
+				}
 			});
-		});
-
-	}
-
-	dragEnded = (taskId) => {
-		console.log('the task' + taskId + ' was released');
-		this.setState();
+		}
 	}
 
 	render() {
@@ -526,6 +532,7 @@ class Board extends Component {
 		const { errors } = this.state;
 		//const [spacing, setSpacing] = React.useState(2);
 		//const classes = useStyles();
+
 		return (<div className={classes.root}>
 			<AppBar position="static">
 				<Toolbar>
@@ -572,39 +579,27 @@ class Board extends Component {
 									: null
 								}
 								<Column id={value._id} className={classes.draggableColumn} onDragEnd={this.taskRecieved} >
+
 									{
 										(value.tasks.length > 0)
-											? value.tasks.map((task, taskIndex) => (
-												<Task id={task._id} className={classes.draggableTask} draggable="true" onDragEnd={this.dragEnded}>
-													<Card className={classes.task} key={`task:${value._id}_${task._id}`} elevation={6}>
-														<CardHeader
-															action={
-																<IconButton onClick={() => { this.TaskhandleClickModify(index, taskIndex) }} size="small" aria-label="settings">
-																	<EditIcon />
-																</IconButton>
-															}
-															title={task.name}
-														/>
-														{task.description}
-														<Button disabled={index === 0} onClick={() => { this.onTaskMoveFromTo(task._id, value._id, this.state.columns[index - 1]._id) }}>
-															preview
-														</Button>
-														<Button disabled={index === this.state.columns.length - 1} onClick={() => { this.onTaskMoveFromTo(task._id, value._id, this.state.columns[index + 1]._id) }}>
-															next
-                            </Button>
-													</Card>
-												</Task>
-											)
-											)
-											: null
+										? 
+										value.tasks.map((task, taskIndex) => (
+											<Task id={task._id} index={taskIndex}  className={classes.task} task={task} onClickEdit={() => { this.TaskhandleClickModify(index, taskIndex) }} draggable="true" onDragEnd={this.taskRecieved} columnId={value._id}>
+												
+											</Task>
+										))
+										: 
+										null
 									}
 								</Column>
 								{
 									(index === 0)
-										? <Button onClick={this.TaskhandleClickOpen}>
+										? 
+										<Button onClick={this.TaskhandleClickOpen}>
 											+Add a Card
-                      </Button>
-										: null
+                    					</Button>
+										: 
+										null
 								}
 							</Card>
 						</GridListTile >
@@ -773,6 +768,14 @@ class Board extends Component {
 			</Dialog>
 
 		</div>);
+		/*
+															<Button disabled={index === 0} onClick={() => { this.onTaskMoveFromTo(task._id, value._id, this.state.columns[index - 1]._id) }}>
+														preview
+													</Button>
+													<Button disabled={index === this.state.columns.length - 1} onClick={() => { this.onTaskMoveFromTo(task._id, value._id, this.state.columns[index + 1]._id) }}>
+														next
+                        							</Button>
+		*/
 	}
 
 }

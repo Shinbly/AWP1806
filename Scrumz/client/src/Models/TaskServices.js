@@ -15,31 +15,48 @@ export class TaskServices {
         return axios.post("/api/tasks/updatetask", taskUpdate);  
     }
 
-    static async onTaskMoveFromTo(taskId, fromColumnId, toColumnId) {
-        return ColumnServices.getColumns([fromColumnId, toColumnId]).then((columns)=>{
+    static async onTaskMoveFromTo(moveData) {
+        var taskId = moveData.taskId;
+        var fromColumnId = moveData.fromColumnId;
+        var toColumnId = moveData.toColumnId;
+        var toTaskindex;
+        if (moveData.index != null) {
+            toTaskindex = moveData.index;
+        }
+        return ColumnServices.getColumns({ids: [fromColumnId, toColumnId]}).then((res)=>{
+
             var fromColumn = 0;
             var toColumn = 1;
+            var columns = res.data;
+            console.log("task getted "+columns)
 
             var taskIndex = columns[fromColumn].tasks.indexOf(taskId);
 
-            columns[toColumn].tasks.push(columns[fromColumn].tasks[taskIndex]);
-            columns[fromColumn].tasks.splice(taskIndex, 1);
+            var toTasks = columns[toColumn].tasks;
+            var fromTasks = columns[fromColumn].tasks;
+
+            if(toTaskindex!= null){
+                toTasks.splice(toTaskindex, 0, fromTasks[taskIndex])
+            }else{
+                toTasks.push(fromTasks[taskIndex]);
+            }
+            fromTasks.splice(taskIndex, 1);
 
             var updateFromColumn = {
                 id: fromColumnId,
-                tasks: columns[fromColumn].tasks
+                tasks:fromTasks
             }
             ColumnServices.updateColumn(updateFromColumn);
 
             var updateToColumn = {
                 id: toColumnId,
-                tasks: columns[toColumn].tasks
+                tasks: toTasks
             }
             ColumnServices.updateColumn(updateToColumn);
            
             return {
-                from: columns[fromColumn],
-                to: columns[toColumn]
+                from: fromTasks,
+                to: toTasks
             };
         });
         
