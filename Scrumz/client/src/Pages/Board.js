@@ -35,13 +35,11 @@ const styles = theme => ({
 		width: 170,
 	},
 	task: {
+		padding : 0,
 		backgroundColor: "lighblue",
 		width: "90%",
 		margin: "auto",
 		marginBottom: 10,
-	},
-	separator: {
-		height: "20px",
 	},
 	draggableColumn: {
 		margin: 0,
@@ -51,7 +49,7 @@ const styles = theme => ({
 		background: "#eeeeee",
 	},
 	paperColumn: {
-		background: "#eeeeee",
+		background: "#ffeeee",
 	},
 	gridList: {
 		flexWrap: 'nowrap',
@@ -600,8 +598,7 @@ class Board extends Component {
 											<Task 
 												id={task._id} 
 												index={taskIndex}  
-												className={classes.task} 
-												separatorClassName = {classes.separator} 
+												className={classes.task}
 												task={task} 
 												onClickEdit={() => {this.TaskhandleClickModify(index, taskIndex)}} 
 												draggable="true" 
