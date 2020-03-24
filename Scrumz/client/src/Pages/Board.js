@@ -35,18 +35,20 @@ const styles = theme => ({
 		width: 170,
 	},
 	task: {
-		paddingBlock: 10,
 		backgroundColor: "lighblue",
 		width: "90%",
 		margin: "auto",
 		marginBottom: 10,
+	},
+	separator: {
+		height: "20px",
 	},
 	draggableColumn: {
 		margin: 0,
 		padding: 0,
 		minHeight: '100px',
 		height: '130%',
-		background: "#ffaaaa",
+		background: "#eeeeee",
 	},
 	paperColumn: {
 		background: "#eeeeee",
@@ -108,22 +110,23 @@ class Board extends Component {
 	}
 
 	getForUpdate(boardId){
-		BoardServices.getboardbyid(boardId).then(board => {
-			console.log('board : ', board.data);
+		BoardServices.getboardbyid(boardId).then(boardData => {
+			console.log('board : ', boardData.data);
+			var board = boardData.data
 			this.setState({ 
-				board: board.data,
-				id: board.data._id,
-				name: board.data.name
+				board: board,
+				id: board._id,
+				name: board.name
 			});
-			UserServices.getUsersbyIds(board.data.members).then((res) => {
+			UserServices.getUsersbyIds(board.members).then((res) => {
 				this.setState({
 					members: res.data
 				});
 			});
-			if (board.data.columns.length > 0) {
-				this.getcolumns(board.data.columns).then(res => {
+			if (board.columns.length > 0) {
+				this.getcolumns(board.columns).then(columns => {
 					this.setState({
-						columns: res
+						columns: columns
 					});
 				}).catch(err => {
 					console.log(err)
@@ -144,9 +147,10 @@ class Board extends Component {
 	}
 	async getcolumns(columnids) {
 		return ColumnServices.getColumns(columnids).then(async res => {
+			var columns = res.data;
+			console.log(columns);
 			return Promise.all(res.data.map(column => {
 				if (column.tasks.length > 0) {
-
 					return TaskServices.getTasks({ids: column.tasks}).then(async res => {
 						return ({ _id: column._id, name: column.name, tasks: res.data, movableByMembers: column.movableByMembers, limitation: column.limitation });
 					});
@@ -504,26 +508,35 @@ class Board extends Component {
 
 	}
 
-	taskRecieved(columnId, taskId) {
-		if(columnId!= null){
-			var toColumnId = columnId.split("_")[0];
-			var index = parseInt(columnId.split("_")[1]);
-			ColumnServices.getColumnByTaskId(taskId).then((columnRes) => {
+	async taskRecieved(move) {
+		var columnId = move.toColumnId;
+		var taskId = move.taskId;
+
+		if(columnId != null && taskId != null){
+			var toColumnId = columnId;
+			var index = move.index;
+			await ColumnServices.getColumnByTaskId(taskId).then(async (columnRes) => {
 				var fromColumn = columnRes.data;
-				console.log("move");
 				if (fromColumn._id != toColumnId){
+					console.log("move from ", fromColumn.name);
 					var move={
 						taskId: taskId,
 						fromColumnId: fromColumn._id,
 						toColumnId : toColumnId,
 						index : index,
 					}
-					TaskServices.onTaskMoveFromTo(move).then((res) => {
+					await TaskServices.onTaskMoveFromTo(move).then((res) => {
 						console.log('move' ,res);
 					});
+				}else{
+					console.log("start column and target column are the same index = ",index);
+					if(index != null){
+						await TaskServices.onOrderTask(fromColumn,taskId, index)
+					}
 				}
 			});
 		}
+
 	}
 
 	render() {
@@ -562,7 +575,7 @@ class Board extends Component {
 			<GridList className={classes.gridList} cols={5}>
 				{
 					this.state.columns.map((value, index) => (
-						<GridListTile className={classes.gridTile} key={value._id} item>
+						<GridListTile className={classes.gridTile} key={value._id}>
 							<Card width={500} className={classes.paperColumn} >
 								<CardHeader
 									action={
@@ -584,9 +597,16 @@ class Board extends Component {
 										(value.tasks.length > 0)
 										? 
 										value.tasks.map((task, taskIndex) => (
-											<Task id={task._id} index={taskIndex}  className={classes.task} task={task} onClickEdit={() => { this.TaskhandleClickModify(index, taskIndex) }} draggable="true" onDragEnd={this.taskRecieved} columnId={value._id}>
-												
-											</Task>
+											<Task 
+												id={task._id} 
+												index={taskIndex}  
+												className={classes.task} 
+												separatorClassName = {classes.separator} 
+												task={task} 
+												onClickEdit={() => {this.TaskhandleClickModify(index, taskIndex)}} 
+												draggable="true" 
+												onDragEnd={this.taskRecieved} 
+												columnId={value._id}/>
 										))
 										: 
 										null

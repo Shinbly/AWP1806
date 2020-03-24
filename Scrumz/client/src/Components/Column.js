@@ -1,27 +1,32 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core/styles';
 
 
 function Column (props) {
 
     const drop = e=> {
+        var target = e.currentTarget
+        console.log('columnDrop');
         e.preventDefault();
         const task_id = e.dataTransfer.getData('task_id');
-        props.onDragEnd(props.id,task_id);
+
+        var move = { toColumnId: props.id, taskId: task_id, index: null}
         const task = document.getElementById(task_id);
-        task.style.display = 'block';
-        e.currentTarget.appendChild(task);
+        target.style.background = "#eeeeee";
+        target.appendChild(task);
+        props.onDragEnd(move).then(res=>{
+            task.style.display = 'block';
+        });
     };
     const dragOver = e => {
         e.preventDefault();
     };
 
     const dragEnter = e =>{
-        console.log('drag enter');
+        e.currentTarget.style.background = 'lightblue';
     };
 
     const dragLeave = e =>{
-        console.log('drag leave');
+        e.currentTarget.style.background = "#eeeeee";
     };
 
     return(
@@ -33,7 +38,7 @@ function Column (props) {
             onDragEnter = {dragEnter}
             onDragLeave = {dragLeave}
         >
-            { props.children }
+            {props.children}
         </div>
     )
 }

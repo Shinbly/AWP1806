@@ -14,6 +14,16 @@ export class TaskServices {
     static async updateTask(taskUpdate) {
         return axios.post("/api/tasks/updatetask", taskUpdate);  
     }
+    static async onOrderTask(fromColumn, taskId, index){
+        var oldIndex = fromColumn.tasks.indexOf(taskId);
+        if (oldIndex != index){
+            fromColumn.tasks.splice(oldIndex, 1);
+            if(oldIndex < index){
+                index -= 1;
+            }
+            fromColumn.tasks.splice(index , 0, taskId);
+        }
+    }
 
     static async onTaskMoveFromTo(moveData) {
         var taskId = moveData.taskId;
@@ -23,42 +33,50 @@ export class TaskServices {
         if (moveData.index != null) {
             toTaskindex = moveData.index;
         }
-        return ColumnServices.getColumns({ids: [fromColumnId, toColumnId]}).then((res)=>{
+        if (fromColumnId!= null && toColumnId != null && taskId != null && fromColumnId != toColumnId){
 
-            var fromColumn = 0;
-            var toColumn = 1;
-            var columns = res.data;
-            console.log("task getted "+columns)
+            return ColumnServices.getColumns([fromColumnId, toColumnId]).then((res) => {
 
-            var taskIndex = columns[fromColumn].tasks.indexOf(taskId);
+                var fromColumn = 0;
+                var toColumn = 1;
+                var columns = res.data;
+                if (columns[0]._id === fromColumnId) {
+                    fromColumn = 0;
+                    toColumn = 1;
+                } else {
+                    fromColumn = 1;
+                    toColumn = 0;
+                }
+                var taskIndex = columns[fromColumn].tasks.indexOf(taskId);
 
-            var toTasks = columns[toColumn].tasks;
-            var fromTasks = columns[fromColumn].tasks;
+                var toTasks = columns[toColumn].tasks;
+                var fromTasks = columns[fromColumn].tasks;
 
-            if(toTaskindex!= null){
-                toTasks.splice(toTaskindex, 0, fromTasks[taskIndex])
-            }else{
-                toTasks.push(fromTasks[taskIndex]);
-            }
-            fromTasks.splice(taskIndex, 1);
+                if (toTaskindex != null) {
+                    toTasks.splice(toTaskindex, 0, fromTasks[taskIndex])
+                } else {
+                    toTasks.push(fromTasks[taskIndex]);
+                }
+                fromTasks.splice(taskIndex, 1);
 
-            var updateFromColumn = {
-                id: fromColumnId,
-                tasks:fromTasks
-            }
-            ColumnServices.updateColumn(updateFromColumn);
+                var updateFromColumn = {
+                    id: fromColumnId,
+                    tasks: fromTasks
+                }
+                ColumnServices.updateColumn(updateFromColumn);
 
-            var updateToColumn = {
-                id: toColumnId,
-                tasks: toTasks
-            }
-            ColumnServices.updateColumn(updateToColumn);
-           
-            return {
-                from: fromTasks,
-                to: toTasks
-            };
-        });
+                var updateToColumn = {
+                    id: toColumnId,
+                    tasks: toTasks
+                }
+                ColumnServices.updateColumn(updateToColumn);
+
+                return {
+                    from: columns[fromColumn].name,
+                    to: columns[toColumn].name
+                };
+            });
+        }
         
     }
 

@@ -6,8 +6,9 @@ import EditIcon from '@material-ui/icons/Edit';
 
 function Task (props){
 
+
     const dragStart = e=>{
-        const target = e.currentTarget;
+        const target = e.target;
         e.dataTransfer.setData('task_id', target.id);
 
         setTimeout(() =>{
@@ -21,19 +22,28 @@ function Task (props){
 
     const dragEnd = e =>{
         e.target.style.display = 'block';
+        const column = document.getElementById(props.columnId);
+        column.style.background = "#eeeeee";
     }
 
 
     const drop = e => {
         console.log('dropped on a task ? ');
-        e.preventDefault();
-        const task_id = e.dataTransfer.getData('task_id');
-        const task = document.getElementById(task_id);
-        const column = document.getElementById(props.columnId);
-        props.onDragEnd((column.id+'_'+(props.index+1)), task_id);
-        e.currentTarget.parentNode.appendChild(task);
-        task.style.display = 'block';
+
     };
+
+
+    const dragEnter = e => {
+        const column = document.getElementById(props.columnId);
+        column.style.background = 'lightblue';
+    };
+
+    const dragLeave = e => {
+        const column = document.getElementById(props.columnId);
+        column.style.background = "#eeeeee";
+    };
+
+    
 
     return (
         < Card
@@ -43,17 +53,22 @@ function Task (props){
             onDragOver={dragOver}
             onDrop={drop}
             onDragEnd={dragEnd}
+            onDragEnter={dragEnter}
+            onDragLeave={dragLeave}
             className={props.className}
             key={`task:${props.columnId}_${props.id}`} 
             elevation={6}>
             <CardHeader 
+                onDrop={drop}
                 action={
-                <IconButton onClick = {props.onClickEdit} size="small" aria-label="settings">
-				    <EditIcon />
+                <IconButton onDrop={drop} onClick = {props.onClickEdit} size="small" aria-label="settings" >
+				    <EditIcon onDrop={drop}/>
 				</IconButton>
                 }
                 title={props.task.name}/>
-			{props.task.description}
+            <span onDrop={drop}>
+			    {props.task.description}
+            </span>
 		</Card>
     )
 }

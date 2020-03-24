@@ -24,7 +24,7 @@ app.use(logger('dev'));
 const dbRoute = require("./config/keys").mongoURI;
 
 //connects the backend with the database
-mongoose.connect(dbRoute, {useNewUrlParser: true})
+mongoose.connect(dbRoute, { useNewUrlParser: true , useFindAndModify: false })
 	.then(() => console.log("mongoDB successfully connected"))
 	.catch(err => console.log(err));
 
