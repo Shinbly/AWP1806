@@ -49,7 +49,7 @@ const styles = theme => ({
 		background: "#eeeeee",
 	},
 	paperColumn: {
-		background: "#ffeeee",
+		background: "#eeeeee",
 	},
 	gridList: {
 		flexWrap: 'nowrap',
@@ -516,7 +516,6 @@ class Board extends Component {
 			await ColumnServices.getColumnByTaskId(taskId).then(async (columnRes) => {
 				var fromColumn = columnRes.data;
 				if (fromColumn._id != toColumnId){
-					console.log("move from ", fromColumn.name);
 					var move={
 						taskId: taskId,
 						fromColumnId: fromColumn._id,
@@ -583,13 +582,8 @@ class Board extends Component {
 									}
 									title={value.name}
 								/>
-								{(value.limitation > 0) ?
-									<h6>
-										{`${value.tasks.length} / ${value.limitation}`}
-									</h6>
-									: null
-								}
-								<Column id={value._id} className={classes.draggableColumn} onDragEnd={this.taskRecieved} >
+								
+								<Column id={value._id} className={classes.draggableColumn} onDragEnd={this.taskRecieved} limitation= {value.limitation}>
 
 									{
 										(value.tasks.length > 0)
@@ -603,7 +597,7 @@ class Board extends Component {
 												onClickEdit={() => {this.TaskhandleClickModify(index, taskIndex)}} 
 												draggable="true" 
 												onDragEnd={this.taskRecieved} 
-												columnId={value._id}/>
+												columnid={value._id}/>
 										))
 										: 
 										null

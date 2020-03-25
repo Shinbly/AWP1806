@@ -26,6 +26,7 @@ export class TaskServices {
     }
 
     static async onTaskMoveFromTo(moveData) {
+        console.log("onMove,", moveData)
         var taskId = moveData.taskId;
         var fromColumnId = moveData.fromColumnId;
         var toColumnId = moveData.toColumnId;
@@ -40,6 +41,7 @@ export class TaskServices {
                 var fromColumn = 0;
                 var toColumn = 1;
                 var columns = res.data;
+                console.log('columns',columns)
                 if (columns[0]._id === fromColumnId) {
                     fromColumn = 0;
                     toColumn = 1;
@@ -76,6 +78,10 @@ export class TaskServices {
                     to: columns[toColumn].name
                 };
             });
+        }else{
+            return {
+                error: 'fromColumnId == null || toColumnId == null || taskId == null || fromColumnId == toColumnId'
+            }
         }
         
     }
