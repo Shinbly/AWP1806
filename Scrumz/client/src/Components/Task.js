@@ -47,22 +47,23 @@ function Task (props){
             onDragEnd={dragEnd}
             onDrop={drop}
             className={props.className}
-            elevation={3}>
-            <CardHeader 
+            elevation={3}
+			style={{ backgroundColor: props.color }}>
+            <CardHeader
 
                 action={
                 <IconButton
-                 
-                    onClick = {props.onClickEdit} 
-                    size="small" 
+
+                    onClick = {props.onClickEdit}
+                    size="small"
                     aria-label="settings" >
 
-                    <EditIcon 
+                    <EditIcon
                     />
 				</IconButton>
                 }
                 title={props.task.name}/>
-            <span 
+            <span
 
                 >
 			    {props.task.description}

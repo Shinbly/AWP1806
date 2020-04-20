@@ -86,7 +86,7 @@ class Profile extends Component {
 
 				console.log('image is of size : '+newImage.width + " "+newImage.height);
 
-				 var MAX_SIDE = 75;
+				var MAX_SIDE = 75;
 				var width = newImage.width;
 				var height = newImage.height;
 				if (width > height) {
@@ -145,12 +145,11 @@ class Profile extends Component {
 
 				<AppBar position="static">
 					<Toolbar>
-						<IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
-							<MenuIcon />
-						</IconButton>
-						<Typography variant="h6" className={classes.title}>
-							Scrumz
-             	 		</Typography>
+						<Button onClick={() => {this.props.history.push("/home")}} className={classes.title}>
+							<Typography variant="h6" className={classes.title}>
+								Scrumz
+			  				</Typography>
+						</Button>
 					</Toolbar>
 				</AppBar>
 

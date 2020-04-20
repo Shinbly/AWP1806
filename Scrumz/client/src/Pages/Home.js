@@ -30,7 +30,8 @@ const styles = theme => ({
 		maxWidth: 345
 	},
 	title: {
-		flexGrow: 1,
+		marginRight: 'auto',
+		marginLeft: 'auto'
 	},
 });
 
@@ -165,12 +166,11 @@ class Home extends Component {
 			<div className={classes.root}>
 				<AppBar position="static">
 					<Toolbar>
-						<IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
-							<MenuIcon />
-						</IconButton>
-						<Typography variant="h6" className={classes.title}>
-							Scrumz
-			  			</Typography>
+						<Button onClick={() => {this.props.history.push("/home")}} className={classes.title}>
+							<Typography variant="h6" className={classes.title}>
+								Scrumz
+			  				</Typography>
+						</Button>
 						<Button onClick={this.onLogoutClick} color="inherit">
 							Logout
 			  			</Button>

@@ -3,7 +3,7 @@ import classnames from "classnames";
 import { Card, CardHeader } from '@material-ui/core';
 //import EditIcon from '@material-ui/icons/Edit';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
-import { GridList, GridListTile, Button, IconButton, FormControlLabel, Checkbox } from '@material-ui/core';
+import { Paper, GridList, Grid, GridListTile, Button, IconButton, FormControlLabel, Checkbox } from '@material-ui/core';
 import Avatar from '@material-ui/core/Avatar';
 import AvatarGroup from '@material-ui/lab/AvatarGroup';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -20,6 +20,7 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import MenuIcon from '@material-ui/icons/Menu';
+import DoneIcon from '@material-ui/icons/Done';
 
 import Column from '../Components/Column'
 import Task from '../Components/Task'
@@ -66,6 +67,11 @@ const styles = theme => ({
 	title: {
 		flexGrow: 1,
 	},
+  paper: {
+  height: 40,
+  width: 40,
+},
+
 });
 
 class Board extends Component {
@@ -78,6 +84,9 @@ class Board extends Component {
 			name: "",
 			columns: [],
 			members: [],
+			colors: ["#81ca72","#F5DE33","#FF9F1A","#EF7B6B","#CF92E6","#3394CC","#33CEE6","#51E898","#FF93D5","#5D6A82","#C2C8D1"],
+			newTaskColor: "",
+			newTaskMembers: [],
 
 			titleDialog: "",
 			textDialog: "",
@@ -117,6 +126,7 @@ class Board extends Component {
 				name: board.name
 			});
 			UserServices.getUsersbyIds(board.members).then((res) => {
+				console.log(res.data);
 				this.setState({
 					members: res.data
 				});
@@ -150,6 +160,7 @@ class Board extends Component {
 			return Promise.all(res.data.map(column => {
 				if (column.tasks.length > 0) {
 					return TaskServices.getTasks({ids: column.tasks}).then(async res => {
+						console.log(res.data);
 						return ({ _id: column._id, name: column.name, tasks: res.data, movableByMembers: column.movableByMembers, limitation: column.limitation });
 					});
 				} else {
@@ -284,7 +295,8 @@ class Board extends Component {
 			newTaskDuration: task.duration,
 			newTaskDeadLine: task.deadLine,
 			newTaskPriority: task.priority,
-			newTaskTest: task.test
+			newTaskTest: task.test,
+			newTaskColor: task.color,
 		});
 	};
 
@@ -295,6 +307,11 @@ class Board extends Component {
 	onTaskSubmit = e => {
 		e.preventDefault();
 
+		var color = this.state.newTaskColor;
+		if(color === null || color === ""){
+			color = "#FFFFFF";
+		}
+
 		var newTask = {
 			name: this.state.newTaskName,
 			description: this.state.newTaskDescription,
@@ -303,7 +320,8 @@ class Board extends Component {
 			deadLine: this.state.newTaskDeadLine,
 			priority: this.state.newTaskPriority,
 			acceptance: false,
-			test: this.state.newTaskTest
+			test: this.state.newTaskTest,
+			color: color
 		};
 
 		if (this.state.TaskDialogId === null) {
@@ -338,6 +356,7 @@ class Board extends Component {
 	}
 	onNewTask(newTask) {
 		TaskServices.newTask(newTask).then(res => {
+			console.log(res.data);
 			var columns = this.state.columns;
 			columns[0].tasks.push(res.data);
 			this.setState({
@@ -348,7 +367,8 @@ class Board extends Component {
 				newTaskDuration: 0,
 				newTaskDeadLine: null,
 				newTaskPriority: 2,
-				newTaskTest: ''
+				newTaskTest: '',
+				newTaskColor: "",
 			});
 			var listTaskId = columns[0].tasks.map(task => {
 				return task._id
@@ -546,12 +566,11 @@ class Board extends Component {
 		return (<div className={classes.root}>
 			<AppBar position="static">
 				<Toolbar>
-					<IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
-						<MenuIcon />
-					</IconButton>
+				<Button onClick={() => {this.props.history.push("/home")}} className={classes.title}>
 					<Typography variant="h6" className={classes.title}>
 						Scrumz
-                      </Typography>
+					</Typography>
+				</Button>
 				</Toolbar>
 			</AppBar>
 			<h2>{this.state.name}</h2>
@@ -597,7 +616,8 @@ class Board extends Component {
 												onClickEdit={() => {this.TaskhandleClickModify(index, taskIndex)}}
 												draggable="true"
 												onDragEnd={this.taskRecieved}
-												columnid={value._id}/>
+												columnid={value._id}
+												color={task.color}/>
 										))
 										:
 										null
@@ -766,6 +786,61 @@ class Board extends Component {
 							label="Test"
 							name="Test"
 						/>
+						<Typography style={{paddingTop: 10, paddingBottom: 10,}}>
+							Assign task
+						</Typography>
+						<Grid container spacing={1}>
+						  <Grid container item xs={12} spacing={1}>
+						  {this.state.members.map((value, index) => (
+							  <Grid key={index} container item xs={2} spacing={1} alignItems="center" direction="column">
+							  	<IconButton style={{backgroundColor: "grey", width: 50, height: 50, padding: 0}} onClick={() => {
+									var members = this.state.newTaskMembers;
+									var indexMember = -1;
+									members.forEach((member, i) => {
+										if(member === value._id){
+											indexMember = i;
+										}
+									});
+									if(indexMember === -1){
+										members.push(value._id);
+										this.setState({newTaskMembers: members});
+									}else{
+										members.splice(indexMember,1);
+										this.setState({newTaskMembers: members});
+									}
+								}}>
+
+									{
+								   (this.state.newTaskMembers.includes(value._id))
+									   ?
+									   <DoneIcon style={{ color: "white", width: 40, height: 40 }}/> : <Avatar style={{width: 50, height: 50}} alt={value.username} src={value.avatar} />
+								  }
+								</IconButton>
+							  	<Typography>{value.username}</Typography>
+
+							  </Grid>
+
+						  ))}
+						  </Grid>
+						</Grid>
+						<Typography style={{paddingTop: 10, paddingBottom: 10,}}>
+							Task color
+						</Typography>
+						<Grid container spacing={1}>
+						  <Grid container item xs={12} spacing={1}>
+						  {this.state.colors.map((value, index) => (
+							  <Grid key={index} item>
+							  {
+							 (this.state.newTaskColor !== value)
+								 ?
+							  	<Button className={classes.paper} style={{ background: value }} onClick={() => {this.setState({newTaskColor: value})}} > </Button>
+							  :
+							  	<Button startIcon={<DoneIcon style={{ color: "white" }}/>} style={{ background: value }} className={classes.paper} onClick={() => {this.setState({newTaskColor: null})}} > </Button>
+							}
+							  </Grid>
+						  ))}
+						  </Grid>
+						</Grid>
 					</DialogContent>
 					<DialogActions>
 						<Button onClick={this.TaskhandleClose} color="primary">
@@ -786,6 +861,7 @@ class Board extends Component {
 													<Button disabled={index === this.state.columns.length - 1} onClick={() => { this.onTaskMoveFromTo(task._id, value._id, this.state.columns[index + 1]._id) }}>
 														next
                         							</Button>
+													//<Paper  className={classes[value]} />
 		*/
 	}
 

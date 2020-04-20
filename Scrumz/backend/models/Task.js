@@ -7,7 +7,7 @@ const TaskSchema = new Schema(
         name: {
             type: String,
             required: true
-        }, 
+        },
         description: {
             type: String,
             required: false
@@ -36,7 +36,10 @@ const TaskSchema = new Schema(
             type: String,
             required: false
         },
-
+		color: {
+            type: String,
+            required: false
+        },
 
     });
 
