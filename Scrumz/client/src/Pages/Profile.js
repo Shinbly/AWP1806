@@ -65,6 +65,24 @@ class Profile extends Component {
 		this.setState({ [e.target.id]: e.target.value });
 	}
 
+	onPictureChange = e =>{
+		var target = e.target;
+		var selectedfile = document.getElementById(target.id).files;
+		if (selectedfile.length > 0) {
+			var imageFile = selectedfile[0];
+			var fileReader = new FileReader();
+			fileReader.onload = function (fileLoadedEvent) {
+				var srcData = fileLoadedEvent.target.result;
+				var newImage = document.createElement('img');
+				newImage.src = srcData;
+				console.log(newImage.src);
+				document.getElementById("dummy").innerHTML = newImage.outerHTML;
+			}
+			fileReader.readAsDataURL(imageFile);
+		}
+
+	}
+
 	onSubmit = e => {
 		e.preventDefault();
 
@@ -87,6 +105,7 @@ class Profile extends Component {
 
 		return (
 			<div className={classes.root}>
+				
 				<AppBar position="static">
 					<Toolbar>
 						<IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
@@ -94,9 +113,10 @@ class Profile extends Component {
 						</IconButton>
 						<Typography variant="h6" className={classes.title}>
 							Scrumz
-              </Typography>
+             	 		</Typography>
 					</Toolbar>
 				</AppBar>
+
 				<Container component="main" maxWidth="xs">
 					<CssBaseline />
 					<div className="ok">
@@ -104,9 +124,15 @@ class Profile extends Component {
 							Update personal informations
 				</Typography>
 						<form noValidate onSubmit={this.onSubmit}>
-							<Tooltip title={this.state.username}>
-								<Avatar alt={this.state.username} src={this.state.avatar} />
-							</Tooltip>
+							<input accept="image/*" className={classes.input} id="icon-button-file" type="file" onChange={this.onPictureChange}/>
+							<label htmlFor="icon-button-file">
+								<IconButton color="primary" aria-label="upload picture" component="span">
+									<Tooltip title={this.state.username}>
+										<Avatar id="dummy" alt={this.state.username} src={this.state.avatar} />
+									</Tooltip>
+								</IconButton>
+							</label>
+							
 
 							<TextField
 								onChange={this.onChange}
