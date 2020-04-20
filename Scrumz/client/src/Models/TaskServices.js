@@ -12,11 +12,11 @@ export class TaskServices {
     }
 
     static async updateTask(taskUpdate) {
-        return axios.post("/api/tasks/updatetask", taskUpdate);  
+        return axios.post("/api/tasks/updatetask", taskUpdate);
     }
     static async onOrderTask(fromColumn, taskId, index){
         var oldIndex = fromColumn.tasks.indexOf(taskId);
-        if (oldIndex != index){
+        if (oldIndex !== index){
             fromColumn.tasks.splice(oldIndex, 1);
             if(oldIndex < index){
                 index -= 1;
@@ -31,10 +31,10 @@ export class TaskServices {
         var fromColumnId = moveData.fromColumnId;
         var toColumnId = moveData.toColumnId;
         var toTaskindex;
-        if (moveData.index != null) {
+        if (moveData.index !== null) {
             toTaskindex = moveData.index;
         }
-        if (fromColumnId!= null && toColumnId != null && taskId != null && fromColumnId != toColumnId){
+        if (fromColumnId!== null && toColumnId !== null && taskId !== null && fromColumnId !== toColumnId){
 
             return ColumnServices.getColumns([fromColumnId, toColumnId]).then((res) => {
 
@@ -83,7 +83,7 @@ export class TaskServices {
                 error: 'fromColumnId == null || toColumnId == null || taskId == null || fromColumnId == toColumnId'
             }
         }
-        
+
     }
 
 }

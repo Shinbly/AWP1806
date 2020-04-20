@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import classnames from "classnames";
 import { Card, CardHeader } from '@material-ui/core';
-import EditIcon from '@material-ui/icons/Edit';
+//import EditIcon from '@material-ui/icons/Edit';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import { GridList, GridListTile, Button, IconButton, FormControlLabel, Checkbox } from '@material-ui/core';
 import Avatar from '@material-ui/core/Avatar';
@@ -111,7 +111,7 @@ class Board extends Component {
 		BoardServices.getboardbyid(boardId).then(boardData => {
 			console.log('board : ', boardData.data);
 			var board = boardData.data
-			this.setState({ 
+			this.setState({
 				board: board,
 				id: board._id,
 				name: board.name
@@ -370,7 +370,7 @@ class Board extends Component {
 		for (var i = 0; i < columns.length || fromColumnId == null; i++) {
 			var column = columns[i];
 			column.tasks.forEach((task) => {
-				if (task._id == taskId) {
+				if (task._id === taskId) {
 					fromColumnId = columns[i]._id;
 				}
 			});
@@ -515,7 +515,7 @@ class Board extends Component {
 			var index = move.index;
 			await ColumnServices.getColumnByTaskId(taskId).then(async (columnRes) => {
 				var fromColumn = columnRes.data;
-				if (fromColumn._id != toColumnId){
+				if (fromColumn._id !== toColumnId){
 					var move={
 						taskId: taskId,
 						fromColumnId: fromColumn._id,
@@ -582,34 +582,34 @@ class Board extends Component {
 									}
 									title={value.name}
 								/>
-								
+
 								<Column id={value._id} className={classes.draggableColumn} onDragEnd={this.taskRecieved} limitation= {value.limitation}>
 
 									{
 										(value.tasks.length > 0)
-										? 
+										?
 										value.tasks.map((task, taskIndex) => (
-											<Task 
-												id={task._id} 
-												index={taskIndex}  
+											<Task
+												id={task._id}
+												index={taskIndex}
 												className={classes.task}
-												task={task} 
-												onClickEdit={() => {this.TaskhandleClickModify(index, taskIndex)}} 
-												draggable="true" 
-												onDragEnd={this.taskRecieved} 
+												task={task}
+												onClickEdit={() => {this.TaskhandleClickModify(index, taskIndex)}}
+												draggable="true"
+												onDragEnd={this.taskRecieved}
 												columnid={value._id}/>
 										))
-										: 
+										:
 										null
 									}
 								</Column>
 								{
 									(index === 0)
-										? 
+										?
 										<Button onClick={this.TaskhandleClickOpen}>
 											+Add a Card
                     					</Button>
-										: 
+										:
 										null
 								}
 							</Card>

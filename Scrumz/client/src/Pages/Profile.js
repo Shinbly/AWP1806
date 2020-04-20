@@ -11,18 +11,20 @@ import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import classnames from "classnames";
 import { withStyles } from '@material-ui/styles';
-import axios from "axios";
+//import axios from "axios";
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
-import avatarDefault from "../Assets/UserProfile.png";
+//import avatarDefault from "../Assets/UserProfile.png";
 
 import { UserServices } from '../Models/UserServices';
 
 
 const styles = theme => ({
 	avatar: {
+		width: 70,
+		height: 70
 	},
 	form: {
 		width: '100%', // Fix IE 11 issue.
@@ -46,6 +48,7 @@ class Profile extends Component {
 			email: "",
 			password: "",
 			password2: "",
+			imgURL: "",
 			errors: {}
 		};
 	}
@@ -68,17 +71,51 @@ class Profile extends Component {
 	onPictureChange = e =>{
 		var target = e.target;
 		var selectedfile = document.getElementById(target.id).files;
+		var canvas = document.createElement("canvas");
 		if (selectedfile.length > 0) {
 			var imageFile = selectedfile[0];
 			var fileReader = new FileReader();
+			var newImage = document.createElement('img');
+			newImage.id = "imgAvatar";
+			var dataurl;
 			fileReader.onload = function (fileLoadedEvent) {
 				var srcData = fileLoadedEvent.target.result;
-				var newImage = document.createElement('img');
 				newImage.src = srcData;
-				console.log(newImage.src);
-				document.getElementById("dummy").innerHTML = newImage.outerHTML;
+				var ctx = canvas.getContext("2d");
+				ctx.drawImage(newImage,0,0);
+
+				console.log('image is of size : '+newImage.width + " "+newImage.height);
+
+				 var MAX_SIDE = 75;
+				var width = newImage.width;
+				var height = newImage.height;
+				if (width > height) {
+				   if (height > MAX_SIDE) {
+				    width *= MAX_SIDE / height;
+				    height = MAX_SIDE;
+				  }
+				} else {
+					if (width > MAX_SIDE) {
+	  			    height *= MAX_SIDE / width;
+	  			    width = MAX_SIDE;
+	  			  }
+				}
+				canvas.width = width;
+				canvas.height = height;
+				console.log('canvas is of size : '+canvas.width + " "+canvas.height);
+				ctx.drawImage(newImage,0,0,newImage.width,newImage.height,0,0,width,height);
+				newImage.width = MAX_SIDE;
+				newImage.height = MAX_SIDE;
+				newImage.src = canvas.toDataURL();
+
+				document.getElementById("avatar").innerHTML = newImage.outerHTML;
+
+				var image = document.getElementById("imgAvatar");
+				console.log(image.src);
+
 			}
 			fileReader.readAsDataURL(imageFile);
+
 		}
 
 	}
@@ -105,7 +142,7 @@ class Profile extends Component {
 
 		return (
 			<div className={classes.root}>
-				
+
 				<AppBar position="static">
 					<Toolbar>
 						<IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
@@ -128,11 +165,11 @@ class Profile extends Component {
 							<label htmlFor="icon-button-file">
 								<IconButton color="primary" aria-label="upload picture" component="span">
 									<Tooltip title={this.state.username}>
-										<Avatar id="dummy" alt={this.state.username} src={this.state.avatar} />
+										<Avatar id="avatar" alt={this.state.username} src={this.state.avatar} className={classes.avatar}/>
 									</Tooltip>
 								</IconButton>
 							</label>
-							
+
 
 							<TextField
 								onChange={this.onChange}
