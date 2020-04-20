@@ -71,7 +71,6 @@ class Profile extends Component {
 	onPictureChange = e =>{
 		var target = e.target;
 		var selectedfile = document.getElementById(target.id).files;
-		var canvas = document.createElement("canvas");
 		if (selectedfile.length > 0) {
 			var imageFile = selectedfile[0];
 			var fileReader = new FileReader();
@@ -80,8 +79,9 @@ class Profile extends Component {
 			var dataurl;
 			fileReader.onload = function (fileLoadedEvent) {
 				var srcData = fileLoadedEvent.target.result;
-				newImage.src = srcData;
+				var canvas = document.createElement("canvas");
 				var ctx = canvas.getContext("2d");
+				newImage.src = srcData;
 				ctx.drawImage(newImage,0,0);
 
 				console.log('image is of size : '+newImage.width + " "+newImage.height);
