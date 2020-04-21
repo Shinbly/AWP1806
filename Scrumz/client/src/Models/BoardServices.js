@@ -32,11 +32,14 @@ export class BoardServices {
         var newLogs = board.logs;
         var d = new Date();
         var jsonLog = {
-          user_id : user.id,
-          username : user.username ,
           content : JSON.stringify(log),
           time :  d.getTime(),
         }
+
+		if(user !== null){
+			jsonLog.user_id = user.id;
+	        jsonLog.username = user.username;
+		}
 
 
         newLogs.unshift(JSON.stringify(jsonLog));

@@ -1,7 +1,10 @@
 import React from 'react'
-import { Card, CardHeader,IconButton } from '@material-ui/core';
+import { Card, CardActions, CardContent, CardHeader,IconButton } from '@material-ui/core';
 import EditIcon from '@material-ui/icons/Edit';
-
+import Avatar from '@material-ui/core/Avatar';
+import AvatarGroup from '@material-ui/lab/AvatarGroup';
+import Tooltip from '@material-ui/core/Tooltip';
+import Typography from '@material-ui/core/Typography';
 
 
 function Task (props){
@@ -57,24 +60,37 @@ function Task (props){
             elevation={3}
 			style={{ backgroundColor: props.color }}>
             <CardHeader
-
                 action={
                 <IconButton
-
                     onClick = {props.onClickEdit}
                     size="small"
                     aria-label="settings" >
-
-                    <EditIcon
-                    />
-				        </IconButton>
+                    <EditIcon/>
+				</IconButton>
                 }
                 title={props.task.name}/>
-            <span
+				<CardContent>
+					<Typography>
+						{props.task.description}
+					</Typography>
+				</CardContent>
+				<CardActions>
+					<AvatarGroup>
+						{props.assignTeamMembers.map((value, index) => (
 
-                >
-			    {props.task.description}
-            </span>
+								(index < 3) ?
+								<Tooltip title={value.username}>
+									<Avatar alt={value.username} src={value.avatar} />
+								</Tooltip>
+								: (index === 3) ?
+								<Tooltip title={props.assignTeamMembers.map(m => { return m.username }).join(' • ')}>
+									<Avatar>+{props.assignTeamMembers.length-3}</Avatar>
+								</Tooltip>
+								: null
+
+						))}
+					</AvatarGroup>
+				</CardActions>
 		</Card>
     )
 }

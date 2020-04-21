@@ -16,6 +16,7 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
+import Link from '@material-ui/core/Link';
 
 
 	const styles = theme => ({
@@ -195,6 +196,7 @@ class Register extends Component {
 	            Sign Up
 	          </Button>
 	        </form>
+			<Link href="/login">Already have an account ? Sign in !</Link>
 	      </div>
 	    </Container>
 

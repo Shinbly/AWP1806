@@ -15,6 +15,7 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
+import Link from '@material-ui/core/Link';
 import { withStyles } from '@material-ui/styles';
 
 
@@ -80,30 +81,7 @@ const styles = theme => ({
         const { classes } = this.props;
 
 		return (
-
-			// const useStyles = makeStyles(theme => ({
-			//   paper: {
-			//     marginTop: theme.spacing(8),
-			//     display: 'flex',
-			//     flexDirection: 'column',
-			//     alignItems: 'center',
-			//   },
-			//   avatar: {
-			//     margin: theme.spacing(1),
-			//     backgroundColor: theme.palette.secondary.main,
-			//   },
-			//   form: {
-			//     width: '100%', // Fix IE 11 issue.
-			//     marginTop: theme.spacing(1),
-			//   },
-			//   submit: {
-			//     margin: theme.spacing(3, 0, 2),
-			//   },
-			// }));
-
-
-			//const classes = useStyles();
-<div className={classes.root}>
+			<div className={classes.root}>
                 <AppBar position="static">
                     <Toolbar>
                         <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
@@ -175,6 +153,7 @@ const styles = theme => ({
 				Sign In
 			  </Button>
 			</form>
+			<Link href="/register">Don't have an account ? Sign up !</Link>
             </Container>
 		  </div>
 	  );
