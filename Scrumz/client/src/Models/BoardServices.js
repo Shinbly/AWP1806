@@ -26,4 +26,29 @@ export class BoardServices {
     return axios.post("/api/boards/deleteboard", { id: id });
   }
 
+  static async addLogs(boardId, user, log) {
+  		return BoardServices.getboardbyid(boardId).then(res=>{
+        var board = res.data;
+        var newLogs = board.logs;
+        var d = new Date();
+        var jsonLog = {
+          user_id : user.id,
+          username : user.username ,
+          content : JSON.stringify(log),
+          time :  d.getTime(),
+        }
+
+
+        newLogs.unshift(JSON.stringify(jsonLog));
+        //newLogs.splice(0, 10);
+        var updateBoard = {
+          id: boardId,
+          logs: newLogs
+        }
+        return BoardServices.updateboard(updateBoard)
+      });
+
+
+  	}
+
 }

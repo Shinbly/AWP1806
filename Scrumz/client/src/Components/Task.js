@@ -23,10 +23,17 @@ function Task (props){
         e.preventDefault();
         const task_id = e.dataTransfer.getData('task_id');
         const task = document.getElementById(task_id);
-        var move = { toColumnId: target.id, taskId: task_id, index: props.index+1 }
 
         target.style.background = "#eeeeee";
         target.appendChild(document.adoptNode(task));
+
+        var move = {
+          user_id : props.user.id,
+          username : props.user.username ,
+          boardId : props.boardId,
+          toColumnId: target.id,
+          taskId: task_id,
+          index: props.index+1 }
         props.onDragEnd(move).then(res => {});
     }
 
@@ -60,7 +67,7 @@ function Task (props){
 
                     <EditIcon
                     />
-				</IconButton>
+				        </IconButton>
                 }
                 title={props.task.name}/>
             <span

@@ -74,8 +74,9 @@ export class TaskServices {
                 ColumnServices.updateColumn(updateToColumn);
 
                 return {
-                    from: columns[fromColumn].name,
-                    to: columns[toColumn].name
+                    taskId : taskId,
+                    from: columns[fromColumn],
+                    to: columns[toColumn]
                 };
             });
         }else{

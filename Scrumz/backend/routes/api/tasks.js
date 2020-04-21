@@ -35,8 +35,6 @@ router.post("/newtask", (req, res) => {
         return res.status(400).json(errors);
     }
 
-	print()
-
     Task.create({
         name: req.body.name,
         description: req.body.description,
@@ -46,7 +44,7 @@ router.post("/newtask", (req, res) => {
         priority: req.body.priority,
         acceptance: false,
         test: req.body.test,
-		color: req.body.color,
+		    color: req.body.color,
     }, function (err, task) {
         if (err) return console.log(err);
         res.send(task);
