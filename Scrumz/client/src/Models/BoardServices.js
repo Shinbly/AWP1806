@@ -18,7 +18,7 @@ export class BoardServices {
     return axios.post('api/boards/updatemember', update);
   }
 
-  static async updateboard(updateBoard) {
+  static async updateBoard(updateBoard) {
     return axios.post('/api/boards/updateboard', updateBoard);
   }
 
@@ -48,7 +48,7 @@ export class BoardServices {
           id: boardId,
           logs: newLogs
         }
-        return BoardServices.updateboard(updateBoard)
+        return BoardServices.updateBoard(updateBoard);
       }).catch(e=>{
         console.log('error adding log : \n'+e);
       });

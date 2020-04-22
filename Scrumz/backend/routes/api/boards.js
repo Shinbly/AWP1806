@@ -14,7 +14,6 @@ const Task = require("../../models/Task");
 //@access Public
 router.post("/getboards", (req,res) => {
 	const userid = req.body.id;
-	console.log(req.body);
 
 	//Find the boards
 	// Board.find({members: userid}.then(boards => {
@@ -43,18 +42,14 @@ router.post("/getboards", (req,res) => {
 
 //@route POST api/boards/getboardbyid
 router.post("/getboardbyid", (req,res)=>{
-	console.log('getboardbyid ', req.body);
-
 	Board.findById(req.body.id, function(err,board){
 		if (err) return console.log(err);
-		console.log(board);
 		res.send(board);
 	})
 });
 
 //@route POST api/boards/newboard
 router.post("/newboard", (req, res) => {
-	console.log('newBoard ', req.body);
 	Board.create({
 		name : req.body.name,
 		columns : req.body.columns,
@@ -70,7 +65,6 @@ router.post("/newboard", (req, res) => {
 
 //@route POST api/boards/updateboard
 router.post("/updateboard", (req, res) => {
-	console.log('Update Board ', req.body);
 
 	update = {};
 	if (req.body.columns)
@@ -90,7 +84,6 @@ router.post("/updateboard", (req, res) => {
 });
 
 router.post("/deleteboard",(req,res) =>{
-	console.log('Delete Board ', req.body);
 	var Boardid = req.body.id;
 	Board.findByIdAndRemove(Boardid, function (err, board) {
 		if (err) return console.log(err);
@@ -111,7 +104,6 @@ router.post("/deleteboard",(req,res) =>{
 
 //@route POST api/boards/addmember
 router.post("/updatemember", (req, res) => {
-	console.log('update member', req.body);
 
 	update = {};
 	update.members = req.body.members;

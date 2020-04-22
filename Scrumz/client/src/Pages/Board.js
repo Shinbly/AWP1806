@@ -131,6 +131,20 @@ class Board extends Component {
 			//need to reload
 			dirty: false,
 
+			filters: (task) => {
+				if(this.state.filteredBy.length > 0){
+					var isInside = false;
+					this.state.filteredBy.forEach((member, i) => {
+						isInside = (isInside || task.assignTeamMembers.includes(member));
+					});
+
+					return isInside;
+				}else{
+					return true;
+				}
+				},
+			filteredBy: [],
+
 			errors: {},
 		};
 	}
@@ -158,7 +172,21 @@ class Board extends Component {
 			});
 			if (board.columns.length > 0) {
 				await this.getcolumns(board.columns).then(async columns => {
+
+					columns.sort((a,b)=>{
+						var indexA = board.columns.findIndex((id)=>{
+							return a._id === id;
+						}) ;
+						var indexB = board.columns.findIndex((id)=>{
+							return b._id === id;
+						}) ;;
+						return indexA - indexB;
+					});
 					state.columns = columns;
+
+					//console.log("order of board : ", board.columns,"\n order of getColumns : ", columns.map(item=>{return item._id;}))
+
+
 					// this.setState({
 					// 	columns: columns
 					// });
@@ -169,6 +197,8 @@ class Board extends Component {
 						var user_id = '';
 						var time = '';
 						var avatar;
+						var taskId;
+						var taskName;
 						try{
 							var log = JSON.parse(item);
 							var content = JSON.parse(log.content);
@@ -188,10 +218,10 @@ class Board extends Component {
 							}
 
 							if(content.type === 'move'){
-								var taskId = content.taskId;
+								taskId = content.taskId;
 								var fromColumn = content.fromColumn;
 								var toColumn =  content.toColumn;
-								var taskName ='';
+								taskName ='';
 								var fromColumnName ='';
 								var toColumnName = '';
 								columns.forEach((column, i) => {
@@ -228,8 +258,8 @@ class Board extends Component {
 
 							}
 							if(content.type === 'newTask'){
-								var taskId = content.taskId;
-								var taskName ='';
+								taskId = content.taskId;
+								taskName ='';
 								columns.forEach((column, i) => {
 									if(taskName === ""){
 										column.tasks.forEach((task, i) => {
@@ -276,13 +306,13 @@ class Board extends Component {
 					});
 					state.logs = myLogs;
 
+					this.resetColumnDiv(board.columns);
 				}).catch(err => {
 					console.log('error column '+err)
 				});
 
 			}
 			//console.log(state);
-			this.resetColumnDiv(board.columns);
 			this.setState(state);
 		}).catch(err => {
 			console.log('error board' + err)
@@ -331,7 +361,7 @@ class Board extends Component {
 		return ColumnServices.getColumns(columnids).then(async res => {
 			var columns = res.data;
 			//console.log('columns' +columns);
-			return Promise.all(res.data.map(column => {
+			return Promise.all(columns.map(column => {
 				if (column.tasks.length > 0) {
 					return TaskServices.getTasks({ids: column.tasks}).then(async res => {
 						//console.log('tasks '+res.data);
@@ -347,6 +377,29 @@ class Board extends Component {
 		}).catch(err => {
 			console.log('error : '+err)
 		});
+	}
+
+	setFilters(memberId){
+		var members = this.state.filteredBy;
+		var index = -1;
+
+		members.forEach((member, i) => {
+			if(member === memberId){
+				index = i;
+			}
+		});
+
+		if(index !== -1){
+			members.splice(index,1);
+		}else{
+			members.push(memberId);
+		}
+
+		this.setState({filteredBy: members});
+	}
+
+	resetFilters(){
+		this.setState({filteredBy: []});
 	}
 
 	onChange = e => {
@@ -402,6 +455,7 @@ class Board extends Component {
 			this.onUpdateColumn(newColumn, this.state.ColumnDialogId);
 		}
 	};
+
 	onUpdateColumn(updateColumn, id) {
 		var update = updateColumn;
 		update.id = id;
@@ -417,6 +471,7 @@ class Board extends Component {
 			this.setState({ columns: columns });
 		});
 	}
+
 	onNewColumn(newColumn, boardId) {
 		ColumnServices.newColumn(newColumn).then(res => {
 			const columnId = res.data._id;
@@ -437,7 +492,7 @@ class Board extends Component {
 			board.columns = listColumnId;
 			board.logs = newLogs;
 
-			BoardServices.updateboard(updateBoard).then(res => {
+			BoardServices.updateBoard(updateBoard).then(res => {
 				var log = {
 					type : 'newColumn',
 					columnId : columnId,
@@ -453,6 +508,51 @@ class Board extends Component {
 			console.log(err);
 		})
 	};
+
+	async onDeleteColumn(columnId){
+		await ColumnServices.deleteColumn(columnId).then(() => {
+			this.getForUpdate(this.state.id);
+		})
+	}
+
+	async onColumnMove(idFrom, direction){
+		var columnIdFrom = idFrom;
+		var moveDirection = 0;
+		var columns = this.state.board.columns;
+		var newColumn = [];
+		if(direction === "left"){
+			for(var i = columns.length-1 ; i >= 0 ; i --){
+				if(columns[i] == columnIdFrom && i > 0){
+					newColumn.unshift(columns[i-1]);
+					newColumn.unshift(columns[i]);
+					i--;
+				}else{
+					newColumn.unshift(columns[i]);
+				}
+			}
+		}else if(direction === "right"){
+			for(var i = 0 ; i < columns.length ; i ++){
+				if(columns[i] == columnIdFrom && i <columns.length-1 ){
+					newColumn.push(columns[i+1]);
+					newColumn.push(columns[i]);
+					i++;
+				}else{
+					newColumn.push(columns[i]);
+				}
+			}
+		}
+		var boardId = this.state.id;
+		var update= {
+			id: boardId,
+			columns : newColumn
+		}
+
+		await BoardServices.updateBoard(update).then(async (res)=>{
+			await this.getForUpdate(boardId);
+		});
+
+
+	}
 
 	TaskhandleClickOpen = () => {
 
@@ -498,7 +598,6 @@ class Board extends Component {
 		var newTask = {
 			name: this.state.newTaskName,
 			description: this.state.newTaskDescription,
-			assignTeamMembers: [],
 			duration: this.state.newTaskDuration,
 			deadLine: this.state.newTaskDeadLine,
 			priority: this.state.newTaskPriority,
@@ -685,16 +784,10 @@ class Board extends Component {
 				await this.addMembers(email);
 			});
 
-			if(this.state.newMemberEmail != ""){
+			if(this.state.newMemberEmail !== ""){
 				await this.addMembers(this.state.newMemberEmail);
 			}
 		});
-
-
-
-
-
-
 	}
 
 
@@ -814,32 +907,50 @@ class Board extends Component {
 				</Toolbar>
 			</AppBar>
 			<h2>{this.state.name}</h2>
-			{
-				(this.state.members.length > 0) ?
 					<AvatarGroup>
 						{this.state.members.map((value, index) => (
 							<Tooltip title={value.username}>
-								<Avatar alt={value.username} src={value.avatar} />
+								<IconButton style={{backgroundColor: "grey", width: 50, height: 50, padding: 0}} onClick={() => {this.setFilters(value._id)}}>
+									{
+										this.state.filteredBy.includes(value._id) ?
+										<DoneIcon style={{ color: "white", width: 40, height: 40 }}/> : <Avatar alt={value.username} src={value.avatar} />
+									}
+								</IconButton>
 							</Tooltip>
 						))}
-						<Tooltip title={this.state.members.map(m => { return m.username }).join(' • ')}>
-							<Avatar>+{this.state.members.length}</Avatar>
-						</Tooltip>
 					</AvatarGroup>
-					: null
-			}
 			<GridList className={classes.gridList} cols={5}>
 				{
 					this.state.columns.map((value, index) => (
 						<GridListTile className={classes.gridTile} key={value._id}>
 							<Card width={500} className={classes.paperColumn} >
 								<CardHeader
+									avatar={
+										<div style={{width: 60}}>
+										{
+										index >0 ?
+											<IconButton onClick={() => {this.onColumnMove(value._id,"left")}} size="small" aria-label="settings">
+											<ChevronLeftIcon />
+											</IconButton>
+										: null
+										}
+										{index < this.state.columns.length -1
+											?
+											<IconButton onClick={() => {this.onColumnMove(value._id,"right")}} size="small" aria-label="settings">
+											<ChevronRightIcon />
+											</IconButton>
+
+											:null}
+										</div>
+									}
 									action={
+										<div>
 										<IconButton onClick={() => { this.ColumnhandleClickModify(index) }} size="small" aria-label="settings">
 											<MoreVertIcon />
 										</IconButton>
+										</div>
 									}
-									title={value.name}
+									title={<Typography style={{paddingRight: 60}}>{value.name}</Typography>}
 								/>
 							<div>
 								<Column id={value._id} className={classes.draggableColumn} onDragEnd={this.taskRecieved} limitation= {value.limitation} user={this.state.userId} boardId={this.state.board._id}>
@@ -849,6 +960,7 @@ class Board extends Component {
 											(value.tasks.length > 0)
 											?
 											value.tasks.map((task, taskIndex) => (
+												(this.state.filters(task)) ?
 												<div>
 													<Task
 														id={task._id}
@@ -875,6 +987,7 @@ class Board extends Component {
 															return myMember;
 														})}/>
 												</div>
+												: null
 											))
 											:
 											null
@@ -886,7 +999,7 @@ class Board extends Component {
 									(index === 0)
 										?
 										<Button onClick={this.TaskhandleClickOpen}>
-											+Add a Card
+											+ Add a Card
                     					</Button>
 										:
 										null
@@ -900,7 +1013,7 @@ class Board extends Component {
 				New column
             </Button>
 			<Button onClick={this.MembershandleClickOpen} variant="contained" color="primary">
-				Add members
+				Manage members
             </Button>
 			<Dialog open={this.state.addMemberDialogOpen} onClose={this.MembershandleClose} aria-labelledby="form-dialog-columntitle">
 				<DialogTitle id="form-dialog-columntitle">
@@ -1016,6 +1129,13 @@ class Board extends Component {
 						/>
 					</DialogContent>
 					<DialogActions>
+						{
+							this.state.ColumnDialogId ?
+							<Button onClick={() => {this.ColumnhandleClose(); this.onDeleteColumn(this.state.ColumnDialogId)}} color="primary">
+								Delete
+							</Button> : null
+						}
+
 						<Button onClick={this.ColumnhandleClose} color="primary">
 							Cancel
                         </Button>

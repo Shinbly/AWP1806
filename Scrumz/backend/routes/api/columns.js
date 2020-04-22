@@ -10,18 +10,16 @@ const Column = require("../../models/Column");
 //@desc Get columns of the user
 //@access Public
 router.post("/getcolumns", (req, res) => {
-    const columnids = req.body.ids;
-    console.log('getcolumns ', req.body);
+    const columnIds = req.body.ids;
     var columnList = [];
-    Column.find().where('_id').in(columnids).exec((err, columns) => {
-        if (columns.length > 0) {
+    Column.find().where('_id').in(columnIds).exec((err, columns) => {
+        if (columns!= null && columns.length > 0) {
             columns.forEach((column) => {
                 columnList.push(column);
             });
             res.send(columnList);
         }
     });
-
 });
 
 //@route POST api/columns/getcolumntaskid
@@ -29,18 +27,16 @@ router.post("/getcolumns", (req, res) => {
 //@access Public
 router.post("/getcolumntaskid", (req, res) => {
     const taskId = req.body.taskId;
-    console.log('getcolumntaskid ',req.body);
     Column.findOne({'tasks': taskId}).exec((err, column) => {
         console.log(column);
         res.send(column);
     });
-    
+
 
 });
 
 //@route POST api/columns/newcolumn
 router.post("/newcolumn", (req, res) => {
-    console.log('new Column', req.body);
 
     //Form validation
     const { errors, isValid } = validateColumnInput(req.body);
@@ -62,7 +58,6 @@ router.post("/newcolumn", (req, res) => {
 });
 
 router.post("/updatecolumn", (req, res) => {
-    console.log('Update Column', req.body);
     update = {};
     if (req.body.name != null)
         update.name = req.body.name;
@@ -76,9 +71,9 @@ router.post("/updatecolumn", (req, res) => {
         .then(() => {res.send({success: true})});
 });
 
-router.post("deletecolumn",(req,res)=>{
-	console.log('Delete Column', req.body);
-	Column.findByIdAndRemove(req.body.id, function(err,column) {
+router.post("/deletecolumn",(req,res)=>{
+	var columnId = req.body.id;
+	Column.findByIdAndRemove(columnId, function(err,column) {
 		if (err) return console.log(err);
 		var taskIds = column.tasks;
 		return taskIds.forEach((taskId) => {

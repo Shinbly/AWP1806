@@ -29,4 +29,8 @@ export class ColumnServices {
         return axios.post("/api/columns/getcolumntaskid", {taskId : id});
     }
 
+	static async deleteColumn(id) {
+      return axios.post("/api/columns/deletecolumn", { id: id });
+    }
+
 }
