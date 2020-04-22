@@ -69,13 +69,15 @@ const styles = theme => ({
 	},
 	title: {
 		flexGrow: 1,
+		marginRight: 'auto',
+		marginLeft: 'auto'
 	},
   paper: {
 	  height: 40,
 	  width: 40,
 	},
 	drawer:{
-		width : 100,
+		width : 200,
 		flexShrink: 0,
 	},
 	drawerItem : {
@@ -90,6 +92,7 @@ class Board extends Component {
 	constructor() {
 		super();
 		this.state = {
+			userId : "",
 			id: "",
 			board: {},
 			name: "",
@@ -165,6 +168,7 @@ class Board extends Component {
 						var username = '';
 						var user_id = '';
 						var time = '';
+						var avatar;
 						try{
 							var log = JSON.parse(item);
 							var content = JSON.parse(log.content);
@@ -172,11 +176,15 @@ class Board extends Component {
 								var d = new Date(log.time);
 								time = `${d.getDate()}/${d.getMonth()} ${d.getHours()}:${d.getMinutes()}`;
 							}
-							if(log.username != null){
-								username = log.username;
-							}
 							if(log.user_id != null){
 								user_id = log.user_id;
+								this.state.members.forEach((member, i) => {
+									//console.log(member);
+									if(member._id === user_id){
+										username = member.username;
+										avatar = member.avatar;
+									}
+								});
 							}
 
 							if(content.type === 'move'){
@@ -262,6 +270,7 @@ class Board extends Component {
 							msg : message,
 							username : username,
 							user_id : user_id,
+							avatar : avatar,
 							time : time,
 						})
 					});
@@ -311,6 +320,7 @@ class Board extends Component {
 
 	componentDidMount() {
 		try{
+			this.setState({userId :this.props.location.data.user_id });
 			this.update(this.props.location.data.id);
 		}catch(e){
 			console.log(e);
@@ -747,10 +757,7 @@ class Board extends Component {
 		var columnId = move.toColumnId;
 		var taskId = move.taskId;
 		var boardId = move.boardId;
-		var user = {
-			user_id : move.user_id,
-			username : move.username,
-		}
+		var user_id = move.user_id;
 
 		if(columnId != null && taskId != null){
 			var toColumnId = columnId;
@@ -766,15 +773,13 @@ class Board extends Component {
 						index : index,
 					}
 					await TaskServices.onTaskMoveFromTo(move).then(async (res) => {
-						//console.log('moved');
 						var log = {
 						 	type : 'move',
 						 	taskId : res.taskId,
 						 	fromColumn : res.from._id,
 						 	toColumn: res.to._id
 					 	};
-
-						await BoardServices.addLogs(boardId, user, log);
+						await BoardServices.addLogs(boardId, user_id, log);
 					});
 				}else{
 					//console.log("start column and target column are the same index = ",index);
@@ -798,12 +803,12 @@ class Board extends Component {
 		return (<div className={classes.root}>
 			<AppBar position="static">
 				<Toolbar>
-				<Button onClick={() => {this.props.history.push("/home")}} className={classes.title}>
+				<Button onClick={() => {this.props.history.push("/home")}} className={classes.title} color="inherit">
 					<Typography variant="h6" className={classes.title}>
 						Scrumz
 					</Typography>
 				</Button>
-				<IconButton onClick={()=>{this.setState({showLogs : !this.state.showLogs})}}>
+				<IconButton onClick={()=>{this.setState({showLogs : !this.state.showLogs})}} color="inherit" >
 					{this.state.showLogs ? <ChevronRightIcon />: <ChevronLeftIcon/>}
 				</IconButton>
 				</Toolbar>
@@ -837,7 +842,7 @@ class Board extends Component {
 									title={value.name}
 								/>
 							<div>
-								<Column id={value._id} className={classes.draggableColumn} onDragEnd={this.taskRecieved} limitation= {value.limitation} user={this.props.auth.user} boardId={this.state.board._id}>
+								<Column id={value._id} className={classes.draggableColumn} onDragEnd={this.taskRecieved} limitation= {value.limitation} user={this.state.userId} boardId={this.state.board._id}>
 
 									<div id= 'init'>
 										{
@@ -847,7 +852,7 @@ class Board extends Component {
 												<div>
 													<Task
 														id={task._id}
-														user={this.props.auth.user}
+														user={this.state.userId}
 														boardId={this.state.board._id}
 														index={taskIndex}
 														className={classes.task}
@@ -1154,19 +1159,30 @@ class Board extends Component {
         anchor="right"
         open={this.state.showLogs}
       >
-				<Grid container spacing={1}>
-					<Grid container item spacing={1} alignItems="center" direction="column">
-						<IconButton onClick={()=>{this.setState({showLogs : false})}}>
-	            <ChevronRightIcon />
-	          </IconButton>
-						{(this.state.board.logs) ?
-						this.state.logs.map((log, index) => (
-							 <Grid key={index} item>
-								<Typography style={{paddingTop: 10, width : 250,}} >{log.username} {log.msg} - {log.time}</Typography>
-							 </Grid>
-						)) : null}
-					</Grid>
-				</Grid>
+				<IconButton onClick={()=>{this.setState({showLogs : false})}} style={{marginRight: 'auto', marginLeft: 'auto'}}>
+					<ChevronRightIcon />
+				</IconButton>
+				<List>
+						{
+							(this.state.board.logs)
+							? this.state.logs.map((log, index) => (
+							<ListItem style={{paddingTop: 10, width : 400,}}>
+								{(log.username) ?
+									<div style={{paddingLeft: 10, width : 70}}>
+										<Avatar src = {log.avatar} alt = {log.username}/>
+										<Typography>{log.username}</Typography>
+									</div>
+									: null
+							  }
+								{(log.username)
+								?<Typography paragraph style={{paddingLeft: 10, width : 240}}>{log.msg}</Typography>
+								:<Typography paragraph style={{paddingLeft: 10, width : 310}}>{log.msg}</Typography>}
+								<Typography style={{color : 'lightgray', paddingLeft: 10, width : 70}}>{log.time}</Typography>
+						 	</ListItem>
+							))
+							: null
+					}
+				</List>
 			</Drawer>
 
 		</div>);

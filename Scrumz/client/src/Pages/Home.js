@@ -74,6 +74,7 @@ class Home extends Component {
 						id: res.data._id,
 						name: res.data.name,
 						columns: [],
+						user_id : this.props.auth.user.id,
 					}
 				}
 			);
@@ -149,6 +150,7 @@ class Home extends Component {
 										id: board._id,
 										name: board.name,
 										columns: board.columns,
+										user_id : this.props.auth.user.id,
 									}
 								})
 							}>
@@ -166,7 +168,7 @@ class Home extends Component {
 			<div className={classes.root}>
 				<AppBar position="static">
 					<Toolbar>
-						<Button onClick={() => {this.props.history.push("/home")}} className={classes.title}>
+						<Button onClick={() => {this.props.history.push("/home")}} className={classes.title} color="inherit">
 							<Typography variant="h6" className={classes.title}>
 								Scrumz
 			  				</Typography>

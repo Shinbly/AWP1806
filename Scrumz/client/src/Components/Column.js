@@ -13,8 +13,7 @@ function Column (props) {
         target.appendChild(document.adoptNode(task));
 
         var move = {
-          user_id : props.user.id,
-          username : props.user.username ,
+          user_id : props.user,
           boardId : props.boardId,
           toColumnId: props.id,
           taskId: task_id,

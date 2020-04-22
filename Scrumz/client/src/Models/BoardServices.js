@@ -26,7 +26,8 @@ export class BoardServices {
     return axios.post("/api/boards/deleteboard", { id: id });
   }
 
-  static async addLogs(boardId, user, log) {
+  static async addLogs(boardId, userId, log) {
+    console.log('addLogs' + log);
   		return BoardServices.getboardbyid(boardId).then(res=>{
         var board = res.data;
         var newLogs = board.logs;
@@ -36,9 +37,8 @@ export class BoardServices {
           time :  d.getTime(),
         }
 
-		if(user !== null){
-			jsonLog.user_id = user.id;
-	        jsonLog.username = user.username;
+		if(userId !== null){
+			jsonLog.user_id = userId;
 		}
 
 
@@ -49,6 +49,8 @@ export class BoardServices {
           logs: newLogs
         }
         return BoardServices.updateboard(updateBoard)
+      }).catch(e=>{
+        console.log('error adding log : \n'+e);
       });
 
 
