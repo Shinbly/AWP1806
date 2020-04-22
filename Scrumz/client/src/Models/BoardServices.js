@@ -14,8 +14,8 @@ export class BoardServices {
     return axios.post("/api/boards/getboardbyid", { id: id });
   }
 
-  static async addMember(update) {
-    return axios.post('api/boards/addmember', update);
+  static async updateMember(update) {
+    return axios.post('api/boards/updatemember', update);
   }
 
   static async updateboard(updateBoard) {

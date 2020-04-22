@@ -23,6 +23,7 @@ import Typography from '@material-ui/core/Typography';
 import DoneIcon from '@material-ui/icons/Done';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+import AddCircleIcon from '@material-ui/icons/AddCircle';
 
 import Column from '../Components/Column'
 import Task from '../Components/Task'
@@ -227,7 +228,6 @@ class Board extends Component {
 											if(taskName === "" && task._id === taskId){
 												taskName = task.name
 											}
-
 										});
 									}
 								});
@@ -653,7 +653,37 @@ class Board extends Component {
 	onMemberSubmit = e => {
 		e.preventDefault();
 
-		this.addMembers(this.state.newMemberEmail);
+		var newList = this.state.newMembersList;
+		var membersEmailToAdd = [];
+		var memberIdToKeep = [];
+		newList.forEach((member, i) => {
+			if(member.new != null && member.new && !member.willdelete){
+				membersEmailToAdd.push(member.username);
+			}
+			if(!member.willdelete && (member.new == null || !member.new) ){
+				memberIdToKeep.push(member._id);
+			}
+		});
+
+		const update = {
+			id: this.state.id,
+			members: memberIdToKeep,
+		};
+
+		BoardServices.updateMember(update).then(async res => {
+			membersEmailToAdd.forEach(async (email, i) => {
+				await this.addMembers(email);
+			});
+
+			if(this.state.newMemberEmail != ""){
+				await this.addMembers(this.state.newMemberEmail);
+			}
+		});
+
+
+
+
+
 
 	}
 
@@ -686,7 +716,7 @@ class Board extends Component {
 							id: this.state.id,
 							members: newMembers,
 						};
-						await BoardServices.addMember(update).then(async res => {
+						await BoardServices.updateMember(update).then(async res => {
 							//console.log(res);
 							var newBoard = this.state.board;
 							var newMembers = this.state.members;
@@ -880,22 +910,32 @@ class Board extends Component {
 							{
 								this.state.newMembersList.map((member, i) => (
 									<ListItem>
-										<Avatar src={member.avatar} alt={member.username}/>
+										{
+											(member.new !== null && member.new)
+											?<AddCircleIcon fontSize="large"/>
+											:<Avatar src={member.avatar} alt={member.username}/>
+										}
 										<Typography>
 											{member.username}
 										</Typography>
-										<Checkbox
-									        checked={member.willdelete !== null && member.willdelete}
-									        onChange={() => {
-												var members = this.state.newMembersList;
-												if(members[i].willdelete !== null){
-													members[i].willdelete = !members[i].willdelete;
-												}else {
-													members[i].willdelete = true;
-												}
-												this.setState({newMembersList: members});
-											}}
-									    />
+										{(member._id !== this.state.board.manager)
+											?
+											<Checkbox
+														checked={member.willdelete !== null && member.willdelete}
+														onChange={() => {
+													var members = this.state.newMembersList;
+													if(members[i].willdelete !== null){
+														members[i].willdelete = !members[i].willdelete;
+													}else {
+														members[i].willdelete = true;
+													}
+													this.setState({newMembersList: members});
+												}}
+												/>
+											:
+											null
+
+										}
 									</ListItem>
 								))
 							}

@@ -110,8 +110,8 @@ router.post("/deleteboard",(req,res) =>{
 });
 
 //@route POST api/boards/addmember
-router.post("/addmember", (req, res) => {
-	console.log('Add member', req.body);
+router.post("/updatemember", (req, res) => {
+	console.log('update member', req.body);
 
 	update = {};
 	update.members = req.body.members;
