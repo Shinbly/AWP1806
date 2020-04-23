@@ -123,6 +123,7 @@ class Board extends Component {
 			newTaskDeadLine: '',
 			newTaskPriority: 2,
 			newTaskTest: '',
+			newTaskColumnIndex: -1,
 
 			addMemberDialogOpen: false,
 			newMemberEmail: "",
@@ -517,12 +518,12 @@ class Board extends Component {
 
 	async onColumnMove(idFrom, direction){
 		var columnIdFrom = idFrom;
-		var moveDirection = 0;
+		//var moveDirection = 0;
 		var columns = this.state.board.columns;
 		var newColumn = [];
 		if(direction === "left"){
 			for(var i = columns.length-1 ; i >= 0 ; i --){
-				if(columns[i] == columnIdFrom && i > 0){
+				if(columns[i] === columnIdFrom && i > 0){
 					newColumn.unshift(columns[i-1]);
 					newColumn.unshift(columns[i]);
 					i--;
@@ -531,13 +532,13 @@ class Board extends Component {
 				}
 			}
 		}else if(direction === "right"){
-			for(var i = 0 ; i < columns.length ; i ++){
-				if(columns[i] == columnIdFrom && i <columns.length-1 ){
-					newColumn.push(columns[i+1]);
-					newColumn.push(columns[i]);
-					i++;
+			for(var index = 0 ; index < columns.length ; index ++){
+				if(columns[index] === columnIdFrom && index <columns.length-1 ){
+					newColumn.push(columns[index+1]);
+					newColumn.push(columns[index]);
+					index++;
 				}else{
-					newColumn.push(columns[i]);
+					newColumn.push(columns[index]);
 				}
 			}
 		}
@@ -567,6 +568,7 @@ class Board extends Component {
 
 	TaskhandleClickModify = (columnindex, taskindex) => {
 		var task = this.state.columns[columnindex].tasks[taskindex];
+		var columnIndex = columnindex;
 		this.setState({
 			newTaskDialogOpen: true,
 			titleDialog: 'Modify the Task',
@@ -580,6 +582,7 @@ class Board extends Component {
 			newTaskTest: task.test,
 			newTaskColor: task.color,
 			newTaskMembers : task.assignTeamMembers,
+			newTaskColumnIndex: columnIndex,
 		});
 	};
 
@@ -741,6 +744,46 @@ class Board extends Component {
 		}
 		ColumnServices.updateColumn(updateToColumn);
 		this.setState({ columns: columns });
+	}
+
+
+	onArchivedTask(task_id){
+		var archivedTasks = this.state.board.archived_tasks;
+		archivedTasks.push(task_id);
+
+		var columns = this.state.columns;
+		var newColumns = [];
+
+		var taskId = task_id;
+
+		var columnIndex = this.state.newTaskColumnIndex;
+
+		var task_index = -1;
+
+		columns[columnIndex].tasks.forEach((task, taskIndex) => {
+			if(task._id === taskId){
+				task_index = taskIndex;
+				columns[columnIndex].tasks.splice(taskIndex,1);
+
+				var updateFromColumn = {
+					id: columns[columnIndex]._id,
+					tasks: columns[columnIndex].tasks.map((t) => {
+						return t._id;
+					}),
+				}
+				ColumnServices.updateColumn(updateFromColumn).then(() => {
+
+
+					var updateBoard = {
+						id: this.state.id,
+						archived_tasks: archivedTasks,
+						//logs: newLogs
+					};
+
+					BoardServices.updateBoard(updateBoard);
+				});
+			}
+		});
 	}
 
 	MembershandleClose = () => {
@@ -1009,6 +1052,20 @@ class Board extends Component {
 					))
 				}
 			</GridList>
+			<Button size="small" color="primary"
+				onClick={() => this.props.history.push(
+					{
+						pathname: "/archivedtasks",
+						data:
+						{
+							id: this.state.id,
+							user_id : this.state.userId,
+							members : this.state.members,
+						}
+					})
+				}>
+					See archived tasks
+			</Button>
 			<Button onClick={this.ColumnhandleClickOpen} variant="contained" color="primary">
 				New column
             </Button>
@@ -1264,6 +1321,12 @@ class Board extends Component {
 						</Grid>
 					</DialogContent>
 					<DialogActions>
+						{
+							this.state.TaskDialogId ?
+							<Button onClick={() => {this.TaskhandleClose(); this.onArchivedTask(this.state.TaskDialogId)}} color="primary">
+								Archived
+							</Button> : null
+						}
 						<Button onClick={this.TaskhandleClose} color="primary">
 							Cancel
                         </Button>

@@ -48,7 +48,7 @@ class Profile extends Component {
 			email: "",
 			password: "",
 			password2: "",
-			imgURL: "",
+			avatar: "",
 			errors: {}
 		};
 	}
@@ -59,6 +59,7 @@ class Profile extends Component {
 				this.setState({
 					username: res.data.username,
 					email: res.data.email,
+					avatar: res.data.avatar,
 				})
 			})
 			.catch(err => { console.log(err) });
@@ -71,64 +72,72 @@ class Profile extends Component {
 	onPictureChange = e =>{
 		var target = e.target;
 		var selectedfile = document.getElementById(target.id).files;
+
 		if (selectedfile.length > 0) {
 			var imageFile = selectedfile[0];
 			var fileReader = new FileReader();
 			var newImage = document.createElement('img');
 			newImage.id = "imgAvatar";
-			var dataurl;
+			//var dataurl;
+
 			fileReader.onload = function (fileLoadedEvent) {
 				var srcData = fileLoadedEvent.target.result;
-				var canvas = document.createElement("canvas");
-				var ctx = canvas.getContext("2d");
 				newImage.src = srcData;
-				ctx.drawImage(newImage,0,0);
 
-				console.log('image is of size : '+newImage.width + " "+newImage.height);
+				const MAX_SIDE = 75;
 
-				var MAX_SIDE = 75;
-				var width = newImage.width;
-				var height = newImage.height;
-				if (width > height) {
-				   if (height > MAX_SIDE) {
-				    width *= MAX_SIDE / height;
-				    height = MAX_SIDE;
-				  }
-				} else {
-					if (width > MAX_SIDE) {
-	  			    height *= MAX_SIDE / width;
-	  			    width = MAX_SIDE;
-	  			  }
-				}
-				canvas.width = width;
-				canvas.height = height;
-				console.log('canvas is of size : '+canvas.width + " "+canvas.height);
-				ctx.drawImage(newImage,0,0,newImage.width,newImage.height,0,0,width,height);
 				newImage.width = MAX_SIDE;
 				newImage.height = MAX_SIDE;
-				newImage.src = canvas.toDataURL();
 
 				document.getElementById("avatar").innerHTML = newImage.outerHTML;
-
-				var image = document.getElementById("imgAvatar");
-				console.log(image.src);
-
 			}
 			fileReader.readAsDataURL(imageFile);
-
 		}
-
 	}
 
 	onSubmit = e => {
 		e.preventDefault();
+
+		var avatarUrl = document.getElementById("imgAvatar").src;
+
+		var newImage = document.createElement('img');
+		var canvas = document.createElement("canvas");
+		var ctx = canvas.getContext("2d");
+		newImage.src = avatarUrl;
+		ctx.drawImage(newImage,0,0);
+
+		console.log('image is of size : '+newImage.width + " "+newImage.height);
+
+		var MAX_SIDE = 75;
+		var width = newImage.width;
+		var height = newImage.height;
+		if (width > height) {
+		   if (height > MAX_SIDE) {
+			width *= MAX_SIDE / height;
+			height = MAX_SIDE;
+		  }
+		} else {
+			if (width > MAX_SIDE) {
+			height *= MAX_SIDE / width;
+			width = MAX_SIDE;
+		  }
+	  }
+
+		canvas.width = width;
+		canvas.height = height;
+		console.log('canvas is of size : '+ canvas.width + " " + canvas.height);
+
+		ctx.drawImage(newImage,0,0,newImage.width,newImage.height,0,0,width,height);
+
+		var imageDataURL = canvas.toDataURL();
 
 		const updateUser = {
 			id: this.props.auth.user.id,
 			username: this.state.username,
 			email: this.state.email,
 			password: this.state.password,
-			password2: this.state.password2
+			password2: this.state.password2,
+			avatar: imageDataURL,
 		};
 		UserServices.updateUser(updateUser)
 			.then(res => console.log("ok"))

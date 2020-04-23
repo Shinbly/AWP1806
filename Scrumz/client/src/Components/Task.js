@@ -59,13 +59,14 @@ function Task (props){
             elevation={3}
 			style={{ backgroundColor: props.color }}>
             <CardHeader
-                action={
+                action={props.onClickEdit !== null ?
                 <IconButton
                     onClick = {props.onClickEdit}
                     size="small"
                     aria-label="settings" >
                     <EditIcon/>
 				</IconButton>
+				:null
                 }
                 title={props.task.name}/>
 				<CardContent>

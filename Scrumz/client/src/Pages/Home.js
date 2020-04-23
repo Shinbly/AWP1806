@@ -72,8 +72,6 @@ class Home extends Component {
 					data:
 					{
 						id: res.data._id,
-						name: res.data.name,
-						columns: [],
 						user_id : this.props.auth.user.id,
 					}
 				}
@@ -148,8 +146,6 @@ class Home extends Component {
 									data:
 									{
 										id: board._id,
-										name: board.name,
-										columns: board.columns,
 										user_id : this.props.auth.user.id,
 									}
 								})

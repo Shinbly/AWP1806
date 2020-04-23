@@ -13,6 +13,7 @@ import Login from './Pages/Login';
 import Register from './Pages/Register';
 import Home from './Pages/Home';
 import Board from './Pages/Board';
+import ArchivedTasks from './Pages/ArchivedTasks';
 import Profile from './Pages/Profile';
 import PrivateRoute from "./Pages/private-route/PrivateRoute";
 
@@ -147,6 +148,7 @@ class App extends Component {
 		          <Route path = "/register" component = {Register}/>
 		          <Route path = "/board" component = {Board}/>
 				  <Route path = "/profile" component = {Profile}/>
+				  <Route path = "/archivedtasks" component = {ArchivedTasks}/>
 				  <Switch>
 				  	<PrivateRoute path="/home" component={Home}/>
 				  </Switch>
