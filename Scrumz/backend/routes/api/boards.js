@@ -85,18 +85,21 @@ router.post("/updateboard", (req, res) => {
 
 router.post("/deleteboard",(req,res) =>{
 	var Boardid = req.body.id;
-	Board.findByIdAndRemove(Boardid, function (err, board) {
+	Board.findByIdAndRemove(Boardid, async function (err, board) {
 		if (err) return console.log(err);
-		var columnIds = board.columns;
-		return columnIds.forEach((columnId) => {
-			Column.findByIdAndRemove(columnId, function(err,column) {
-				if (err) return console.log(err);
-				var taskIds = column.tasks;
-				return taskIds.forEach((taskId) => {
-					Task.findByIdAndRemove(taskId);
+		return Promise.all(board.archived_tasks.map((taskId) => {
+			return Task.findByIdAndRemove(taskId);
+		})).then(async ()=>{
+			return await Promise.all(board.columns.map((columnId) => {
+				return Column.findByIdAndRemove(columnId, function(err,column) {
+					if (err) return console.log(err);
+					return Promise.all(column.tasks.map(async (taskId) => {
+						await Task.findByIdAndRemove(taskId);
+					}));
 				});
-			});
+			}));
 		});
+
 	}).then(() => {
 		res.send({success: true});
 	});

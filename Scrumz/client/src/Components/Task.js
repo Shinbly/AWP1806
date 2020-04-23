@@ -1,6 +1,5 @@
 import React from 'react'
 import { Card, CardActions, CardContent, CardHeader,IconButton } from '@material-ui/core';
-import EditIcon from '@material-ui/icons/Edit';
 import Avatar from '@material-ui/core/Avatar';
 import AvatarGroup from '@material-ui/lab/AvatarGroup';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -59,12 +58,12 @@ function Task (props){
             elevation={3}
 			style={{ backgroundColor: props.color }}>
             <CardHeader
-                action={props.onClickEdit !== null ?
+                action={props.editIcon !== null ?
                 <IconButton
                     onClick = {props.onClickEdit}
                     size="small"
                     aria-label="settings" >
-                    <EditIcon/>
+                    {props.editIcon}
 				</IconButton>
 				:null
                 }

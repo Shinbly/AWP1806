@@ -24,6 +24,8 @@ import DoneIcon from '@material-ui/icons/Done';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
+import EditIcon from '@material-ui/icons/Edit';
+
 
 import Column from '../Components/Column'
 import Task from '../Components/Task'
@@ -343,13 +345,19 @@ class Board extends Component {
 
 	async update(id){
 		await this.getForUpdate(id);
-		setTimeout(()=>{
-			//console.log("updating ...");
-			this.update(id)
-		},5000);
+		if(this._ismounted){
+				setTimeout(()=>{
+					this.update(id)
+				},5000);
+		}
+	}
+
+	componentWillUnmount() {
+	   this._ismounted = false;
 	}
 
 	componentDidMount() {
+		this._ismounted = true;
 		try{
 			this.setState({userId :this.props.location.data.user_id });
 			this.update(this.props.location.data.id);
@@ -1006,6 +1014,7 @@ class Board extends Component {
 												(this.state.filters(task)) ?
 												<div>
 													<Task
+														editIcon = {<EditIcon/>}
 														id={task._id}
 														user={this.state.userId}
 														boardId={this.state.board._id}

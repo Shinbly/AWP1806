@@ -89,7 +89,7 @@ const styles = theme => ({
                         </IconButton>
                         <Typography variant="h6" className={classes.title}>
                             Scrumz
-              </Typography>
+              					</Typography>
                     </Toolbar>
                 </AppBar>
                 <Container maxWidth="xs" className="formulaire">

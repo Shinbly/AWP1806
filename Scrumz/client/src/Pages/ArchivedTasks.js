@@ -23,7 +23,9 @@ import Task from '../Components/Task'
 import { UserServices } from '../Models/UserServices';
 import { BoardServices } from '../Models/BoardServices';
 import { TaskServices } from '../Models/TaskServices';
+import { ColumnServices } from '../Models/ColumnServices';
 
+import UnarchiveIcon from '@material-ui/icons/Unarchive';
 
 const styles = theme => ({
 	task: {
@@ -48,6 +50,7 @@ class ArchivedTasks extends Component {
 		this.state = {
 			boardId: "",
 			userId: "",
+			board: {},
 			archived_tasks: [],
 			members : [],
 		};
@@ -81,6 +84,7 @@ class ArchivedTasks extends Component {
 					this.setState({
 						boardId: boardId,
 						userId: userId,
+						board: board,
 						archived_tasks: archivedTasks,
 						members : members,
 					});
@@ -92,7 +96,28 @@ class ArchivedTasks extends Component {
 		}
 	}
 
-	backToBoard(){
+	unarchive(taskId){
+		var tasks = this.state.archived_tasks.filter((value, index) => { return value._id != taskId });
+		var boardUpdate = {
+			id : this.state.boardId,
+			archived_tasks : tasks,
+		}
+		BoardServices.updateBoard(boardUpdate).then(()=>{
+			ColumnServices.getColumns([this.state.board.columns[0]]).then((res)=>{
+				var column = res.data[0];
+				column.tasks.push(taskId);
+				var update = {
+					id : column._id,
+					tasks : column.tasks,
+				}
+				ColumnServices.updateColumn(update).then(()=>{
+
+					this.setState({archived_tasks : tasks});
+
+				});
+			})
+
+		})
 
 	}
 
@@ -106,7 +131,7 @@ class ArchivedTasks extends Component {
 
 				<AppBar position="static">
 					<Toolbar>
-					<Button color="white"
+					<Button color="inherit"
 						onClick={() => this.props.history.push(
 							{
 								pathname: "/board",
@@ -119,43 +144,46 @@ class ArchivedTasks extends Component {
 						}>
 							See Board
 					</Button>
-						<Button onClick={() => {this.props.history.push("/home")}} className={classes.title}>
+						<Button onClick={() => {this.props.history.push("/home")}} className={classes.title} color="inherit">
 							<Typography variant="h6" className={classes.title}>
 								Scrumz
 			  				</Typography>
 						</Button>
 					</Toolbar>
 				</AppBar>
+					{this.state.archived_tasks.length > 0  ?
+						<Grid style={{marginBottom: 50, marginTop: 50, marginLeft: 50, marginRight: 50}} container spacing={3} justify="center" alignItems="center">
+							{
+								this.state.archived_tasks.map((task, index) => (
+									<Task
+										editIcon = {<UnarchiveIcon/>}
+										id={task._id}
+										user={this.state.userId}
+										boardId={this.state.boardId}
+										index={index}
+										className={classes.task}
+										task={task}
+										onClickEdit={()=>{this.unarchive(task._id);}}
+										draggable="false"
+										onDragEnd={() => {}}
+										columnid={""}
+										color={task.color}
+										assignTeamMembers={task.assignTeamMembers.map((member) => {
+											var myMember ={};
+											this.state.members.forEach((memberItem, i) => {
+												if(member === memberItem._id){
+													myMember.username = memberItem.username;
+													myMember.avatar = memberItem.avatar;
+													myMember._id = memberItem._id;
+												}
+											});
+											return myMember;
+										})}/>
+								))
+							}
+							</Grid>
+						 : <Typography>No task archived</Typography>}
 
-					<Grid style={{marginBottom: 50, marginTop: 50, marginLeft: 50, marginRight: 50}} container spacing={3} justify="center" alignItems="center">
-						{
-							this.state.archived_tasks.map((task, index) => (
-								<Task
-									id={task._id}
-									user={this.state.userId}
-									boardId={this.state.boardId}
-									index={index}
-									className={classes.task}
-									task={task}
-									onClickEdit={null}
-									draggable="false"
-									onDragEnd={() => {}}
-									columnid={""}
-									color={task.color}
-									assignTeamMembers={task.assignTeamMembers.map((member) => {
-										var myMember ={};
-										this.state.members.forEach((memberItem, i) => {
-											if(member === memberItem._id){
-												myMember.username = memberItem.username;
-												myMember.avatar = memberItem.avatar;
-												myMember._id = memberItem._id;
-											}
-										});
-										return myMember;
-									})}/>
-							))
-						}
-						</Grid>
 			</div>
 		);
 	}

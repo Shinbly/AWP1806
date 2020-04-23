@@ -42,6 +42,8 @@ class Home extends Component {
 		this.state = {
 			boards: [],
 			errors: {},
+			deleteBoadDialogOpen : false,
+			boardIdToDelete : '',
 			newBoardDialogOpen: false,
 			newBoardName: "",
 		};
@@ -139,7 +141,7 @@ class Home extends Component {
 						</CardContent>
 					</CardActionArea>
 					<CardActions>
-						<Button size="small" color="primary"
+						<Button color="primary"
 							onClick={() => this.props.history.push(
 								{
 									pathname: "/board",
@@ -152,7 +154,7 @@ class Home extends Component {
 							}>
 								See Board
 						</Button>
-						<Button onClick={() => this.onDeleteBoard(board._id)}>
+						<Button onClick={()=>{this.setState({boardIdToDelete : board._id, deleteBoadDialogOpen: true})}} color="primary">
 							Delete Board
 						</Button>
 					</CardActions>
@@ -216,6 +218,29 @@ class Home extends Component {
 							</Button>
 						</DialogActions>
 					</form>
+				</Dialog>
+
+
+				<Dialog open={this.state.deleteBoadDialogOpen} onClose={this.handleClose} aria-labelledby="form-dialog-title">
+					<DialogTitle>Delete the Board ? </DialogTitle>
+						<DialogContent>
+							<DialogContentText>
+								Do you realy want to delete the board ?.
+							</DialogContentText>
+						</DialogContent>
+						<DialogActions>
+							<Button onClick={()=>{this.setState({deleteBoadDialogOpen: false})}} color="primary">
+								Cancel
+							</Button>
+							<Button type="submit" onClick={
+									()=>{
+										this.onDeleteBoard(this.state.boardIdToDelete);
+										this.setState({deleteBoadDialogOpen: false})
+									}
+								} color="secondary">
+								Delete
+							</Button>
+						</DialogActions>
 				</Dialog>
 			</div>
 		);

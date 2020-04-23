@@ -154,7 +154,7 @@ class Profile extends Component {
 
 				<AppBar position="static">
 					<Toolbar>
-						<Button onClick={() => {this.props.history.push("/home")}} className={classes.title}>
+						<Button onClick={() => {this.props.history.push("/home")}} className={classes.title} color="inherit">
 							<Typography variant="h6" className={classes.title}>
 								Scrumz
 			  				</Typography>
