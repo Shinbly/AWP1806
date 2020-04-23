@@ -16,7 +16,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 //import MenuIcon from '@material-ui/icons/Menu';
 //import avatarDefault from "../Assets/UserProfile.png";
-import {GridList, Button} from '@material-ui/core';
+import {Grid, Button} from '@material-ui/core';
 
 import Task from '../Components/Task'
 
@@ -29,8 +29,9 @@ const styles = theme => ({
 	task: {
 		padding : 0,
 		backgroundColor: "lighblue",
-		width: "90%",
-		margin: "auto",
+		width: 170,
+		marginLeft: 20,
+		marginRight: 20,
 		marginBottom: 10,
 	},
 	title: {
@@ -126,8 +127,7 @@ class ArchivedTasks extends Component {
 					</Toolbar>
 				</AppBar>
 
-				<Container component="main" maxWidth="xs">
-					<GridList className={classes.gridList} cols={5}>
+					<Grid style={{marginBottom: 50, marginTop: 50, marginLeft: 50, marginRight: 50}} container spacing={3} justify="center" alignItems="center">
 						{
 							this.state.archived_tasks.map((task, index) => (
 								<Task
@@ -155,8 +155,7 @@ class ArchivedTasks extends Component {
 									})}/>
 							))
 						}
-						</GridList>
-				</Container>
+						</Grid>
 			</div>
 		);
 	}
