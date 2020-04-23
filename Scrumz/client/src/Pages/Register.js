@@ -92,13 +92,12 @@ class Register extends Component {
 		  <div className={classes.root}>
   			<AppBar position="static">
   				<Toolbar>
-  					<IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
-  						<MenuIcon />
-  					</IconButton>
+						<div style ={{width : 100}} >
+						</div>
   					<Typography variant="h6" className={classes.title}>
   						Scrumz
             </Typography>
-  					<Button href='/login' color="inherit">
+  					<Button  style ={{width : 100}} href='/login' color="inherit">
   						Login
             </Button>
   				</Toolbar>
@@ -106,7 +105,7 @@ class Register extends Component {
 	    <Container component="main" maxWidth="xs">
 	      <CssBaseline />
 	      <div className="ok">
-	        <Avatar className="ok">
+	        <Avatar className="ok" style ={{marginTop : 10,marginBottom : 10, flexGrow: 1, marginRight: 'auto', marginLeft: 'auto'}}>
 	          <LockOutlinedIcon />
 	        </Avatar>
 	        <Typography component="h1" variant="h5">

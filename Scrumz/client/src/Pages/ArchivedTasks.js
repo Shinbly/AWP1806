@@ -96,22 +96,26 @@ class ArchivedTasks extends Component {
 		}
 	}
 
-	unarchive(taskId){
+	async unarchive(taskId){
 		var tasks = this.state.archived_tasks.filter((value, index) => { return value._id != taskId });
 		var boardUpdate = {
 			id : this.state.boardId,
 			archived_tasks : tasks,
 		}
-		BoardServices.updateBoard(boardUpdate).then(()=>{
-			ColumnServices.getColumns([this.state.board.columns[0]]).then((res)=>{
+		await BoardServices.updateBoard(boardUpdate).then(async ()=>{
+			await ColumnServices.getColumns([this.state.board.columns[0]]).then(async (res)=>{
 				var column = res.data[0];
 				column.tasks.push(taskId);
 				var update = {
 					id : column._id,
 					tasks : column.tasks,
 				}
-				ColumnServices.updateColumn(update).then(()=>{
-
+				await ColumnServices.updateColumn(update).then(async()=>{
+					var log = {
+						type : 'unarchiveTask',
+						taskId : taskId,
+					};
+					await BoardServices.addLogs(this.state.boardId, this.state.userId, log);
 					this.setState({archived_tasks : tasks});
 
 				});

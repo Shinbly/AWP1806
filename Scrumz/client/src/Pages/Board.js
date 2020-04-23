@@ -194,10 +194,11 @@ class Board extends Component {
 					// 	columns: columns
 					// });
 					var myLogs = [];
-					board.logs.forEach((item, i) => {
+					board.logs.forEach(async (item, i) => {
 						var message = item;
 						var username = '';
 						var user_id = '';
+						var timeStamp = -1;
 						var time = '';
 						var avatar;
 						var taskId;
@@ -207,7 +208,8 @@ class Board extends Component {
 							var content = JSON.parse(log.content);
 							if(log.time != null){
 								var d = new Date(log.time);
-								time = `${d.getDate()}/${d.getMonth()} ${d.getHours()}:${d.getMinutes()}`;
+								timeStamp = log.time;
+								time = `${d.getDate()}/${d.getMonth()+1} ${d.getHours()}:${d.getMinutes()}`;
 							}
 							if(log.user_id != null){
 								user_id = log.user_id;
@@ -227,22 +229,29 @@ class Board extends Component {
 								taskName ='';
 								var fromColumnName ='';
 								var toColumnName = '';
-								columns.forEach((column, i) => {
-									if(fromColumnName === "" && column._id === fromColumn){
-										fromColumnName = column.name
+								if(board.archived_tasks.includes(taskId)){
+									await TaskServices.getTasks([taskId]).then(res=>{
+										taskName = res.data[0].name;
 									}
-									if(toColumnName === "" && column._id === toColumn){
-										toColumnName = column.name
-									}
-									if(taskName === ""){
-										column.tasks.forEach((task, i) => {
-											if(taskName === "" && task._id === taskId){
-												taskName = task.name
-											}
+									)
+								}
+									columns.forEach((column, i) => {
+										if(fromColumnName === "" && column._id === fromColumn){
+											fromColumnName = column.name
+										}
+										if(toColumnName === "" && column._id === toColumn){
+											toColumnName = column.name
+										}
+										if(taskName === ""){
+											column.tasks.forEach((task, i) => {
+												if(taskName === "" && task._id === taskId){
+													taskName = task.name
+												}
 
-										});
-									}
-								});
+											});
+										}
+									});
+
 								message = `the task ${taskName} has been moved from ${fromColumnName} to the colum ${toColumnName} `;
 
 							}
@@ -263,6 +272,13 @@ class Board extends Component {
 							if(content.type === 'newTask'){
 								taskId = content.taskId;
 								taskName ='';
+								if(board.archived_tasks.includes(taskId)){
+									await TaskServices.getTasks([taskId]).then(res=>{
+										taskName = res.data[0].name;
+									}
+									)
+								}
+								if(taskName === ""){
 								columns.forEach((column, i) => {
 									if(taskName === ""){
 										column.tasks.forEach((task, i) => {
@@ -272,13 +288,57 @@ class Board extends Component {
 										});
 									}
 								});
+							}
 								message = `the task "${taskName}" has been created.`;
 							}
-							if(content.type === 'editTask'){
-
+							if(content.type === 'archiveTask'){
+								taskId = content.taskId;
+								taskName ='';
+								if(board.archived_tasks.includes(taskId)){
+									await TaskServices.getTasks([taskId]).then(res=>{
+										taskName = res.data[0].name;
+									}
+									)
+								}
+								if(taskName === ""){
+									columns.forEach((column, i) => {
+										if(taskName === ""){
+											column.tasks.forEach((task, i) => {
+												if(taskName === "" && task._id === taskId){
+													taskName = task.name
+												}
+											});
+										}
+									});
+								}
+								message = `the task "${taskName}" has been archived`;
 							}
-							if(content.type === 'deleteTask'){
+							if(content.type === 'unarchiveTask'){
+								taskId = content.taskId;
+								taskName ='';
+								if(board.archived_tasks.includes(taskId)){
+									await TaskServices.getTasks([taskId]).then(res=>{
+										taskName = res.data[0].name;
+									}
+									)
+								}
+								if(taskName === ""){
+									columns.forEach((column, i) => {
+										if(taskName === ""){
+											column.tasks.forEach((task, i) => {
+												if(taskName === "" && task._id === taskId){
+													taskName = task.name
+												}
+											});
+										}
+									});
+								}
+								message = `the task "${taskName}" has been unarchived`;
+							}
+							if(content.type === 'editTask'){
+							}
 
+							if(content.type === 'deleteTask'){
 							}
 							if(content.type === 'newColumn'){
 								var columnId = content.columnId;
@@ -291,10 +351,8 @@ class Board extends Component {
 								message = `the column "${columnName}" has been created.`;
 							}
 							if(content.type === 'editColumn'){
-
 							}
 							if(content.type === 'deleteColumn'){
-
 							}
 
 						}catch(e){
@@ -305,8 +363,15 @@ class Board extends Component {
 							user_id : user_id,
 							avatar : avatar,
 							time : time,
+							timeStamp : timeStamp,
+						});
+						myLogs.sort((a,b)=>{
+							return b.timeStamp - a.timeStamp
 						})
 					});
+					myLogs.sort((a,b)=>{
+						return a.time - b.time
+					})
 					state.logs = myLogs;
 
 					this.resetColumnDiv(board.columns);
@@ -348,7 +413,7 @@ class Board extends Component {
 		if(this._ismounted){
 				setTimeout(()=>{
 					this.update(id)
-				},5000);
+				},2000);
 		}
 	}
 
@@ -788,7 +853,13 @@ class Board extends Component {
 						//logs: newLogs
 					};
 
-					BoardServices.updateBoard(updateBoard);
+					BoardServices.updateBoard(updateBoard).then(async()=>{
+						var log = {
+						 	type : 'archiveTask',
+						 	taskId : taskId,
+					 	};
+						await BoardServices.addLogs(this.state.id, this.state.userId, log);
+					});
 				});
 			}
 		});
@@ -957,6 +1028,7 @@ class Board extends Component {
 				</IconButton>
 				</Toolbar>
 			</AppBar>
+			<div>
 			<h2>{this.state.name}</h2>
 					<AvatarGroup>
 						{this.state.members.map((value, index) => (
@@ -1006,7 +1078,7 @@ class Board extends Component {
 							<div>
 								<Column id={value._id} className={classes.draggableColumn} onDragEnd={this.taskRecieved} limitation= {value.limitation} user={this.state.userId} boardId={this.state.board._id}>
 
-									<div id= 'init'>
+									<Grid  cols={5} id= 'init'>
 										{
 											(value.tasks.length > 0)
 											?
@@ -1044,7 +1116,7 @@ class Board extends Component {
 											:
 											null
 										}
-									</div>
+									</Grid>
 									</Column>
 							</div>
 								{
@@ -1377,6 +1449,8 @@ class Board extends Component {
 				</List>
 			</Drawer>
 
+		</div>
+			
 		</div>);
 	}
 

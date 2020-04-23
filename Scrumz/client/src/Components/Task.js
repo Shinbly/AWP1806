@@ -18,24 +18,29 @@ function Task (props){
         },0);
     }
 
-    const drop = e =>{
+    const drop = async e =>{
         e.stopPropagation();
-        console.log("drop")
-        var target = e.currentTarget.parentNode;
-        e.preventDefault();
-        const task_id = e.dataTransfer.getData('task_id');
-        const task = document.getElementById(task_id);
+        try{
+          console.log("drop")
+          var target = e.currentTarget.parentNode;
+          e.preventDefault();
+          const task_id = e.dataTransfer.getData('task_id');
+          const task = document.getElementById(task_id);
 
-        target.style.background = "#eeeeee";
-        target.appendChild(document.adoptNode(task));
+          target.style.background = "#eeeeee";
+          target.appendChild(document.adoptNode(task));
 
-        var move = {
-          user_id : props.user,
-          boardId : props.boardId,
-          toColumnId: target.id,
-          taskId: task_id,
-          index: props.index+1 }
-        props.onDragEnd(move).then(res => {});
+          var move = {
+            user_id : props.user,
+            boardId : props.boardId,
+            toColumnId: target.id,
+            taskId: task_id,
+            index: props.index+1 }
+          props.onDragEnd(move).then(res => {});
+        }catch(e){
+          console.log(e);
+        }
+
     }
 
 

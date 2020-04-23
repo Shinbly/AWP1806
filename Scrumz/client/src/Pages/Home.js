@@ -166,17 +166,20 @@ class Home extends Component {
 			<div className={classes.root}>
 				<AppBar position="static">
 					<Toolbar>
+						<div style={{width: 200}} ></div>
 						<Button onClick={() => {this.props.history.push("/home")}} className={classes.title} color="inherit">
 							<Typography variant="h6" className={classes.title}>
 								Scrumz
 			  				</Typography>
 						</Button>
-						<Button onClick={this.onLogoutClick} color="inherit">
-							Logout
-			  			</Button>
-			  			<Button onClick={() => {this.props.history.push("/profile")}} color="inherit">
-				  			Profile
-				  		</Button>
+						<div style={{width: 200}} >
+							<Button onClick={this.onLogoutClick} color="inherit">
+								Logout
+							</Button>
+							<Button onClick={() => {this.props.history.push("/profile")}} color="inherit">
+								Profile
+							</Button>
+						</div>
 					</Toolbar>
 				</AppBar>
 				<h1>Your Board</h1>

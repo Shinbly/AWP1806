@@ -93,7 +93,7 @@ const styles = theme => ({
                     </Toolbar>
                 </AppBar>
                 <Container maxWidth="xs" className="formulaire">
-			<Avatar className="ok">
+			<Avatar className="ok" style ={{marginTop : 10,marginBottom : 10, flexGrow: 1, marginRight: 'auto', marginLeft: 'auto'}}>
 			  <LockOutlinedIcon />
 			</Avatar>
 			<Typography component="h1" variant="h5">
