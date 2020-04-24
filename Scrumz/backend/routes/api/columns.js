@@ -71,17 +71,16 @@ router.post("/updatecolumn", (req, res) => {
         .then(() => {res.send({success: true})});
 });
 
-router.post("/deletecolumn",(req,res)=>{
+router.post("/deletecolumn",async (req,res)=>{
 	var columnId = req.body.id;
-	Column.findByIdAndRemove(columnId, function(err,column) {
-		if (err) return console.log(err);
-		var taskIds = column.tasks;
-		return taskIds.forEach((taskId) => {
-			Task.findByIdAndRemove(taskId);
-		});
-	}).then(() => {
-		res.send({success: true});
-	});
+  await Column.findById(columnId,function(err,column){
+    column.tasks.forEach(async (taskId, i) => {
+      await Task.findByIdAndRemove(taskId);
+    });
+  });
+  await Column.findByIdAndRemove(columnId);
+  res.send('deleted');
+
 });
 
 

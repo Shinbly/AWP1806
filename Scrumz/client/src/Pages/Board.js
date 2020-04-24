@@ -154,18 +154,12 @@ class Board extends Component {
 
 	async getForUpdate(boardId){
 		var state = {};
-		await BoardServices.getboardbyid(boardId).then(async boardData => {
+		await BoardServices.getBoardById(boardId).then(async boardData => {
 			//console.log('board : ', boardData.data);
 			var board = boardData.data
 			state.board = board;
 			state.id = board._id;
 			state.name = board.name;
-
-			// this.setState({
-			// 	board: board,
-			// 	id: board._id,
-			// 	name: board.name
-			// });
 
 			await UserServices.getUsersbyIds(board.members).then((res) => {
 				//console.log('users : '+res.data);
@@ -173,9 +167,10 @@ class Board extends Component {
 					members: res.data
 				});
 			});
-			if (board.columns.length > 0) {
-				await this.getcolumns(board.columns).then(async columns => {
 
+			if (board.columns.length > 0) {
+
+				await this.getcolumns(board.columns).then(async columns => {
 					columns.sort((a,b)=>{
 						var indexA = board.columns.findIndex((id)=>{
 							return a._id === id;
@@ -413,7 +408,7 @@ class Board extends Component {
 		if(this._ismounted){
 				setTimeout(()=>{
 					this.update(id)
-				},2000);
+				},10000);
 		}
 	}
 
@@ -423,12 +418,14 @@ class Board extends Component {
 
 	componentDidMount() {
 		this._ismounted = true;
+		var boardId = this.props.match.params.boardId;
+		var userId = this.props.auth.user.id;
+		this.setState({userId :userId, id: boardId});
 		try{
-			this.setState({userId :this.props.location.data.user_id });
-			this.update(this.props.location.data.id);
+			this.update(boardId);
 		}catch(e){
 			console.log(e);
-			this.props.history.push("/home");
+			//this.props.history.push("/home");
 		}
 	}
 	async getcolumns(columnids) {
@@ -1028,9 +1025,9 @@ class Board extends Component {
 				</IconButton>
 				</Toolbar>
 			</AppBar>
-			<div>
+			<div style={{padding: 20}}>
 			<h2>{this.state.name}</h2>
-					<AvatarGroup>
+					<AvatarGroup style={{paddingBottom: 10}}>
 						{this.state.members.map((value, index) => (
 							<Tooltip title={value.username}>
 								<IconButton style={{backgroundColor: "grey", width: 50, height: 50, padding: 0}} onClick={() => {this.setFilters(value._id)}}>
@@ -1134,17 +1131,7 @@ class Board extends Component {
 				}
 			</GridList>
 			<Button size="small" color="primary"
-				onClick={() => this.props.history.push(
-					{
-						pathname: "/archivedtasks",
-						data:
-						{
-							id: this.state.id,
-							user_id : this.state.userId,
-							members : this.state.members,
-						}
-					})
-				}>
+				onClick={() => this.props.history.push(`/archivedtasks/${this.state.id}`)}>
 					See archived tasks
 			</Button>
 			<Button onClick={this.ColumnhandleClickOpen} variant="contained" color="primary">
@@ -1450,7 +1437,7 @@ class Board extends Component {
 			</Drawer>
 
 		</div>
-			
+
 		</div>);
 	}
 

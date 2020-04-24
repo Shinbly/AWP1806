@@ -20,6 +20,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 
 import Texture from "../Assets/boardsImg/texture1.jpg";
 
+import { BoardServices } from '../Models/BoardServices';
 import { ProjectServices } from '../Models/ProjectServices';
 
 const styles = theme => ({
@@ -35,27 +36,32 @@ const styles = theme => ({
 	},
 });
 
-class Home extends Component {
+class Project extends Component {
 
 	constructor() {
 		super();
 		this.state = {
-			projects: [],
+			project : {},
+			boards: [],
 			errors: {},
-			deleteProjectDialogOpen : false,
-			projectIdToDelete : '',
-			newProjectDialogOpen: false,
-			newProjectName: "",
+			deleteBoadDialogOpen : false,
+			boardIdToDelete : '',
+			newBoardDialogOpen: false,
+			newBoardName: "",
 		};
 	}
 
 	componentDidMount() {
-		ProjectServices.getProjectsByUser(this.props.auth.user.id)
-			.then(res => {
-				this.setState({ projects: res.data });
-			})
-			.catch(err => { console.log(err) }
-			);
+    var projectId = this.props.match.params.projectId;
+
+		ProjectServices.getProjectById(projectId).then(projectData=>{
+			var project = projectData.data;
+			BoardServices.getBoardsByIds(project.boards).then(res => {
+					this.setState({ boards: res.data, project : project });
+				})
+				.catch(err => { console.log(err) }
+				);
+		})
 	}
 
 	onLogoutClick = e => {
@@ -63,29 +69,40 @@ class Home extends Component {
 		this.props.logoutUser();
 	}
 
-	onNewProject(newProject) {
-		ProjectServices.newProject(newProject).then(res => {
-			var projects = this.state.projects;
-			projects.push(res.data);
-			this.setState({ projects: projects });
-			//this.props.history.push(`/project/${res.data._id}`);
-		})
+	async onNewBoard(newBoard) {
+		BoardServices.newboard(newBoard).then(async res => {
+			var boards = this.state.boards;
+			boards.push(res.data);
+			var boardIds = boards.map((board) => {return board._id})
+			var updateProject = {
+				id : this.state.project._id,
+				boards : boardIds,
+			};
+			ProjectServices.updateProject(updateProject).then(update=>{
+				this.setState({ boards: boards });
+			});
+		});
 	}
 
-	onDeleteProject(projectId){
-		ProjectServices.deleteProject(projectId).then(res => {
-				var projects = this.state.projects;
-				projects.filter((value, index) => { return value._id != projectId });
-				this.setState({projects : projects});
+	onDeleteBoard(boardId){
+		BoardServices.deleteBoard(boardId).then(async res => {
+				var boards = this.state.boards;
+				boards.filter((value, index) => { return value._id != boardId });
+				this.setState({boards : boards});
+				var updateProject = {
+					id : this.state.project._id,
+					boards : boards.map(board=>{return board._id}),
+				};
+				await ProjectServices.updateProject(updateProject);
 		});
 	}
 
 	handleClickOpen = () => {
-		this.setState({ newProjectDialogOpen: true });
+		this.setState({ newBoardDialogOpen: true });
 	};
 
 	handleClose = () => {
-		this.setState({ newProjectDialogOpen: false });
+		this.setState({ newBoardDialogOpen: false });
 	};
 
 	onChange = e => {
@@ -98,12 +115,13 @@ class Home extends Component {
 		e.preventDefault();
 
 		var id = this.props.auth.user.id;
-		var newProject = {
-			name: this.state.newProjectName,
-			boards: [],
+		var newBoard = {
+			name: this.state.newBoardName,
+			columns: [],
+			members: [id],
 			manager: id,
 		};
-		this.onNewProject(newProject);
+		this.onNewBoard(newBoard);
 	};
 
 
@@ -111,8 +129,8 @@ class Home extends Component {
 	render() {
 		const { classes } = this.props;
 
-		const projects = this.state.projects.map(project => (
-			<Grid item key={project._id}>
+		const boards = this.state.boards.map(board => (
+			<Grid item key={board._id}>
 				<Card className={classes.cards} >
 					<CardActionArea>
 						<CardMedia
@@ -122,15 +140,16 @@ class Home extends Component {
 							image={Texture}
 						/>
 						<CardContent>
-							<Typography>{project.name}</Typography>
+							<Typography>{board.name}</Typography>
 						</CardContent>
 					</CardActionArea>
 					<CardActions>
-						<Button color="primary"	onClick={() => this.props.history.push(`/project/${project._id}`)}>
-								See project
+						<Button color="primary"
+							onClick={() => this.props.history.push(`/board/${board._id}`)}>
+								See Board
 						</Button>
-						<Button onClick={()=>{this.setState({projectIdToDelete : project._id, deleteProjectDialogOpen: true})}} color="primary">
-							Delete project
+						<Button onClick={()=>{this.setState({boardIdToDelete : board._id, deleteBoadDialogOpen: true})}} color="primary">
+							Delete Board
 						</Button>
 					</CardActions>
 				</Card>
@@ -142,7 +161,7 @@ class Home extends Component {
 				<AppBar position="static">
 					<Toolbar>
 						<div style={{width: 200}} ></div>
-						<Button onClick={() => {}} className={classes.title} color="inherit">
+						<Button onClick={() => {this.props.history.push("/home")}} className={classes.title} color="inherit">
 							<Typography variant="h6" className={classes.title}>
 								Scrumz
 			  				</Typography>
@@ -157,24 +176,28 @@ class Home extends Component {
 						</div>
 					</Toolbar>
 				</AppBar>
-				<h1>Your Projects</h1>
+				<h1>{this.state.project.name}</h1>
 				<Grid container spacing={3} justify="center" alignItems="center">
-					{projects}
+					{boards}
 				</Grid>
-				<Button onClick={this.handleClickOpen} variant="contained" color="primary">
-					new Project
-        </Button>
-				<Dialog open={this.state.newProjectDialogOpen} onClose={this.handleClose} aria-labelledby="form-dialog-title">
-					<DialogTitle id="form-dialog-title">Create a new Project</DialogTitle>
+				<Button
+					onClick={this.handleClickOpen}
+					variant="contained"
+					color="primary"
+				>
+					new Board
+            	</Button>
+				<Dialog open={this.state.newBoardDialogOpen} onClose={this.handleClose} aria-labelledby="form-dialog-title">
+					<DialogTitle id="form-dialog-title">Create a new board</DialogTitle>
 					<form noValidate onSubmit={this.onSubmit}>
 						<DialogContent>
 							<DialogContentText>
-								To create a new project, please enter the Name of the project here.
+								To create a new board, please enter the Name of the board here.
 							</DialogContentText>
 							<TextField
 								onChange={this.onChange}
-								value={this.state.newProjectName}
-								id='newProjectName'
+								value={this.state.newBoardName}
+								id='newBoardName'
 								variant="outlined"
 								margin="normal"
 								required
@@ -195,21 +218,21 @@ class Home extends Component {
 				</Dialog>
 
 
-				<Dialog open={this.state.deleteProjectDialogOpen} onClose={this.handleClose} aria-labelledby="form-dialog-title">
-					<DialogTitle>Delete the Project ? </DialogTitle>
+				<Dialog open={this.state.deleteBoadDialogOpen} onClose={this.handleClose} aria-labelledby="form-dialog-title">
+					<DialogTitle>Delete the Board ? </DialogTitle>
 						<DialogContent>
 							<DialogContentText>
-								Do you realy want to delete the project ?.
+								Do you realy want to delete the board ?.
 							</DialogContentText>
 						</DialogContent>
 						<DialogActions>
-							<Button onClick={()=>{this.setState({deleteProjectDialogOpen: false})}} color="primary">
+							<Button onClick={()=>{this.setState({deleteBoadDialogOpen: false})}} color="primary">
 								Cancel
 							</Button>
 							<Button type="submit" onClick={
 									()=>{
-										this.onDeleteProject(this.state.projectIdToDelete);
-										this.setState({deleteProjectDialogOpen: false})
+										this.onDeleteBoard(this.state.boardIdToDelete);
+										this.setState({deleteBoadDialogOpen: false})
 									}
 								} color="secondary">
 								Delete
@@ -221,7 +244,7 @@ class Home extends Component {
 	}
 }
 
-Home.propTypes = {
+Project.propTypes = {
 	logoutUser: PropTypes.func.isRequired,
 	auth: PropTypes.object.isRequired,
 	classes: PropTypes.object.isRequired,
@@ -234,4 +257,4 @@ const mapStateToProps = state => ({
 export default withStyles(styles)(connect(
 	mapStateToProps,
 	{ logoutUser }
-)(Home));
+)(Project));

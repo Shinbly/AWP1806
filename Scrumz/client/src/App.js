@@ -12,6 +12,7 @@ import {setCurrentUser, logoutUser} from "./actions/authActions";
 import Login from './Pages/Login';
 import Register from './Pages/Register';
 import Home from './Pages/Home';
+import Project from './Pages/Project';
 import Board from './Pages/Board';
 import ArchivedTasks from './Pages/ArchivedTasks';
 import Profile from './Pages/Profile';
@@ -144,12 +145,13 @@ class App extends Component {
 		    <Router>
 		      <div className="App">
 				  <Route exact path = "/" component = {Login}/>
-		          <Route path = "/login" component = {Login}/>
-		          <Route path = "/register" component = {Register}/>
-		          <Route path = "/board" component = {Board}/>
-				  <Route path = "/profile" component = {Profile}/>
-				  <Route path = "/archivedtasks" component = {ArchivedTasks}/>
+					<Route path = "/login" component = {Login}/>
+					<Route path = "/register" component = {Register}/>
 				  <Switch>
+						<PrivateRoute path = "/board/:boardId" component = {Board}/>
+						<PrivateRoute path = "/project/:projectId" component = {Project}/>
+						<PrivateRoute path = "/profile" component = {Profile}/>
+						<PrivateRoute path = "/archivedtasks/:boardId" component = {ArchivedTasks}/>
 				  	<PrivateRoute path="/home" component={Home}/>
 				  </Switch>
 		      </div>

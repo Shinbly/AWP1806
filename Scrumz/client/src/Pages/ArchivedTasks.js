@@ -1,14 +1,9 @@
 import React, { Component } from 'react';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
-import Container from '@material-ui/core/Container';
 import Avatar from '@material-ui/core/Avatar';
-import Tooltip from '@material-ui/core/Tooltip';
 import { withRouter } from "react-router-dom";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-import classnames from "classnames";
 import { withStyles } from '@material-ui/styles';
 //import axios from "axios";
 import AppBar from '@material-ui/core/AppBar';
@@ -20,7 +15,6 @@ import {Grid, Button} from '@material-ui/core';
 
 import Task from '../Components/Task'
 
-import { UserServices } from '../Models/UserServices';
 import { BoardServices } from '../Models/BoardServices';
 import { TaskServices } from '../Models/TaskServices';
 import { ColumnServices } from '../Models/ColumnServices';
@@ -58,9 +52,9 @@ class ArchivedTasks extends Component {
 
 	componentDidMount() {
 		try{
-			var userId = this.props.location.data.user_id;
-			var boardId = this.props.location.data.id;
-			var members = this.props.location.data.members;
+			var boardId = this.props.match.params.boardId;
+			var userId = this.props.auth.user.id;
+			var members = [];
 
 
 			BoardServices.getboardbyid(boardId).then(async boardData => {
@@ -92,12 +86,12 @@ class ArchivedTasks extends Component {
 			});
 		}catch(e){
 			console.log(e);
-			this.props.history.push("/home");
+			//this.props.history.push("/home");
 		}
 	}
 
 	async unarchive(taskId){
-		var tasks = this.state.archived_tasks.filter((value, index) => { return value._id != taskId });
+		var tasks = this.state.archived_tasks.filter((value, index) => { return value._id !== taskId });
 		var boardUpdate = {
 			id : this.state.boardId,
 			archived_tasks : tasks,
@@ -136,16 +130,7 @@ class ArchivedTasks extends Component {
 				<AppBar position="static">
 					<Toolbar>
 					<Button color="inherit"
-						onClick={() => this.props.history.push(
-							{
-								pathname: "/board",
-								data:
-								{
-									id: this.state.boardId,
-									user_id : this.state.userId,
-								}
-							})
-						}>
+						onClick={() => this.props.history.push(`/board/${this.props.match.params.boardId}`)}>
 							See Board
 					</Button>
 						<Button onClick={() => {this.props.history.push("/home")}} className={classes.title} color="inherit">

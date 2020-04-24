@@ -8,7 +8,7 @@ export class TaskServices {
     }
 
     static async getTasks(taskIds) {
-        return axios.post("api/tasks/gettasks", taskIds);
+        return axios.post("/api/tasks/gettasks", taskIds);
     }
 
     static async updateTask(taskUpdate) {

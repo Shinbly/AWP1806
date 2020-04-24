@@ -47,7 +47,6 @@ router.post("/register", (req,res) => {
 		});
 		}
 
-		console.log("function done");
 	});
 });
 
@@ -113,7 +112,6 @@ router.post("/login", (req,res) => {
 //@access Public
 router.post("/getuser", (req,res) => {
 	const userid = req.body.id;
-	console.log(req.body);
 
 	User.findOne({_id: userid}, function(err,user){
 		res.send(user);
@@ -125,7 +123,6 @@ router.post("/getuser", (req,res) => {
 //@access Public
 router.post("/getusers", (req, res) => {
 	const userids = req.body.ids;
-	console.log(req.body);
 	User.find().where('_id').in(userids).exec((err, users) => {
 		res.send(users);
 	})
@@ -136,7 +133,6 @@ router.post("/getusers", (req, res) => {
 //@access Public
 router.post("/getuserfromemail", (req,res) => {
 	const email = req.body.email;
-	console.log(req.body.email);
 
 	User.findOne({email: email}, function(err,user){
 		res.send(user);
@@ -179,6 +175,11 @@ router.post("/updateuser", (req, res) => {
 	User.updateOne({_id: req.body.id}, updateUser)
 		.then(res => console.log(res.ok));
 
+});
+
+router.post("/deleteUser", (req,res) => {
+	const userid = req.body.id;
+	User.findByIdAndRemove(userId);
 });
 
 

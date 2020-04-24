@@ -14,27 +14,11 @@ const Task = require("../../models/Task");
 //@access Public
 router.post("/getboards", (req,res) => {
 	const userid = req.body.id;
-
-	//Find the boards
-	// Board.find({members: userid}.then(boards => {
-	// 	if(!boards){
-	// 		return res.status(404).json({noboards: "No boards found"});
-	// 	}else{
-	// 		const payload = {
-	// 			userid: userid,
-	// 			boards: res.json({board: boards})
-	// 		};
-	// 	}
-	//
-	//
-	// }));
-
 	Board.find({members: userid}, function(err, boards) {
 		var boardMap = [];
 		boards.forEach(function(boards) {
 			boardMap.push(boards);
 		});
-
 		res.send(boardMap);
 
 	})
@@ -46,6 +30,20 @@ router.post("/getboardbyid", (req,res)=>{
 		if (err) return console.log(err);
 		res.send(board);
 	})
+});
+
+//@route POST api/boards/getboardsbyids
+router.post("/getboardsbyids", (req, res) => {
+    const boardIds = req.body.ids;
+    Board.find().where('_id').in(boardIds).exec((err, boards) => {
+        if (boards!= null && boards.length > 0) {
+					var boardList = [];
+					boards.forEach((board) => {
+						boardList.push(board);
+					});
+					res.send(boardList);
+        }
+    });
 });
 
 //@route POST api/boards/newboard
@@ -83,26 +81,23 @@ router.post("/updateboard", (req, res) => {
 	});;
 });
 
-router.post("/deleteboard",(req,res) =>{
-	var Boardid = req.body.id;
-	Board.findByIdAndRemove(Boardid, async function (err, board) {
-		if (err) return console.log(err);
-		return Promise.all(board.archived_tasks.map((taskId) => {
-			return Task.findByIdAndRemove(taskId);
-		})).then(async ()=>{
-			return await Promise.all(board.columns.map((columnId) => {
-				return Column.findByIdAndRemove(columnId, function(err,column) {
-					if (err) return console.log(err);
-					return Promise.all(column.tasks.map(async (taskId) => {
-						await Task.findByIdAndRemove(taskId);
-					}));
-				});
-			}));
+router.post("/deleteboard",async (req,res) =>{
+	var boardId = req.body.id;
+	await Board.findById(boardId,async function(err,board){
+		board.archived_tasks.forEach(async (archivedTasksId) => {
+				await Task.findByIdAndRemove(archivedTasksId);
 		});
-
-	}).then(() => {
-		res.send({success: true});
+		board.columns.forEach(async (columnId) => {
+			await Column.findById(columnId,async function(err,column){
+				column.tasks.forEach(async (taskId, i) => {
+					await Task.findByIdAndRemove(taskId);
+				});
+			});
+			await Column.findByIdAndRemove(columnId);
+		});
 	});
+	await Board.findByIdAndRemove(boardId);
+	res.send('deleted');
 });
 
 //@route POST api/boards/addmember

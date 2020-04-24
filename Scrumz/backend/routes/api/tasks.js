@@ -81,11 +81,11 @@ router.post("/updatetask",(req,res)=>{
 		.then(() => {res.send({success: true})});
 });
 
-router.post('deletetask',(req,res)=>{
-	Task.findByIdAndRemove(req.body.id, function(err,column) {
+router.post('deletetask',async (req,res)=>{
+	await Task.findByIdAndRemove(req.body.id, function(err,column) {
 		if (err) return console.log(err);
 	}).then(() => {
-		res.send({success: true});
+		res.send('deleted');
 	});
 });
 
