@@ -14,6 +14,7 @@ export class TaskServices {
     static async updateTask(taskUpdate) {
         return axios.post("/api/tasks/updatetask", taskUpdate);
     }
+
     static async onOrderTask(fromColumn, taskId, index){
         var oldIndex = fromColumn.tasks.indexOf(taskId);
         if (oldIndex !== index){
@@ -26,7 +27,7 @@ export class TaskServices {
     }
 
     static async onTaskMoveFromTo(moveData) {
-        console.log("onMove,", moveData)
+        console.log('move start');
         var taskId = moveData.taskId;
         var fromColumnId = moveData.fromColumnId;
         var toColumnId = moveData.toColumnId;
@@ -36,11 +37,11 @@ export class TaskServices {
         }
         if (fromColumnId!== null && toColumnId !== null && taskId !== null && fromColumnId !== toColumnId){
 
-            return ColumnServices.getColumns([fromColumnId, toColumnId]).then((res) => {
+            var resColumns = await  ColumnServices.getColumns([fromColumnId, toColumnId]);
 
                 var fromColumn = 0;
                 var toColumn = 1;
-                var columns = res.data;
+                var columns = resColumns.data;
                 console.log('columns',columns)
                 if (columns[0]._id === fromColumnId) {
                     fromColumn = 0;
@@ -65,20 +66,22 @@ export class TaskServices {
                     id: fromColumnId,
                     tasks: fromTasks
                 }
-                ColumnServices.updateColumn(updateFromColumn);
 
                 var updateToColumn = {
                     id: toColumnId,
                     tasks: toTasks
                 }
-                ColumnServices.updateColumn(updateToColumn);
+
+                await Promise.all([updateFromColumn,updateToColumn].map((update)=>{
+                  ColumnServices.updateColumn(update);
+                }) )
+                console.log('move stop');
 
                 return {
                     taskId : taskId,
                     from: columns[fromColumn],
                     to: columns[toColumn]
                 };
-            });
         }else{
             return {
                 error: 'fromColumnId == null || toColumnId == null || taskId == null || fromColumnId == toColumnId'

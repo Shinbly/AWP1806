@@ -30,7 +30,6 @@ export class BoardServices {
   }
 
   static async addLogs(boardId, userId, log) {
-    console.log('addLogs' + log);
   		return BoardServices.getBoardById(boardId).then(res=>{
         var board = res.data;
         var newLogs = board.logs;

@@ -3,10 +3,14 @@ import React from 'react'
 
 function Column (props) {
 
-    const drop = e => {
+
+    const drop = async e => {
         e.stopPropagation();
         try{
           var target = e.currentTarget ;
+          while (target.id != props.id){
+            target = target.parentNode;
+          }
           e.preventDefault();
           const task_id = e.dataTransfer.getData('task_id');
           const task = document.getElementById(task_id);
@@ -19,8 +23,7 @@ function Column (props) {
             toColumnId: props.id,
             taskId: task_id,
             index: null}
-          props.onDragEnd(move).then(res=>{
-          });
+          await props.onDragEnd(move);
         }catch(e){
           console.log(e);
         }

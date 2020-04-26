@@ -41,16 +41,16 @@ router.post("/getprojects", async (req,res) => {
 });
 
 //@route POST api/projects/getprojectbyid
-router.post("/getprojectbyid", (req,res)=>{
-	Project.findById(req.body.id, function(err,project){
+router.post("/getprojectbyid", async (req,res)=>{
+	await Project.findById(req.body.id, function(err,project){
 		if (err) return console.log(err);
 		res.send(project);
 	})
 });
 
 //@route POST api/projects/newproject
-router.post("/newproject", (req, res) => {
-	Project.create({
+router.post("/newproject", async (req, res) => {
+	await Project.create({
 		name : req.body.name,
 		boards : [],
 		manager : req.body.manager,
@@ -61,7 +61,7 @@ router.post("/newproject", (req, res) => {
 });
 
 //@route POST api/projects/updateproject
-router.post("/updateproject", (req, res) => {
+router.post("/updateproject",async  (req, res) => {
 	update = {};
 	if (req.body.boards)
 		update.boards = req.body.boards;
@@ -69,7 +69,7 @@ router.post("/updateproject", (req, res) => {
 		update.name = req.body.name;
 	if(req.body.manager)
 		update.manager = req.body.manager;
-	Project.findByIdAndUpdate(req.body.id,update).then((err,project) => {
+	await Project.findByIdAndUpdate(req.body.id,update).then((err,project) => {
     if (err) return console.log(err);
 		res.send("ok");
 	});;

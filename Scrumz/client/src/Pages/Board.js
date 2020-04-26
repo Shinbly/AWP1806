@@ -133,6 +133,7 @@ class Board extends Component {
 
 			//need to reload
 			dirty: false,
+			lastmoveTask : null,
 
 			filters: (task) => {
 				if(this.state.filteredBy.length > 0){
@@ -369,46 +370,47 @@ class Board extends Component {
 					})
 					state.logs = myLogs;
 
-					this.resetColumnDiv(board.columns);
+					this.setState(state);
 				}).catch(err => {
 					console.log('error column '+err)
 				});
 
 			}
 			//console.log(state);
-			this.setState(state);
 		}).catch(err => {
 			console.log('error board' + err)
 		});
 	}
 
-	resetColumnDiv(ids){
-		ids.forEach((id, i) => {
-			var column = document.getElementById(id);
-			if (column != null){
-				if(column.children.length > 1 ){
-						column.childNodes.forEach((item, i) => {
-							//console.log(item);
-							if(item.id !== 'init'){
-								column.removeChild(item);
-							}else{
-								console.log(item);
-							}
+	resetColumnDiv(){/*
+		var columns = this.state.columns;
+		columns.forEach((column, i) => {
+			var columnDoc = document.getElementById(column._id);
+			if(columnDoc != null){
+				column.tasks.forEach((task, j) => {
+					var taskDoc = document.getElementById(task._id);
+					if(taskDoc != null){
+						var adopt = document.adoptNode(taskDoc)
+					}
 
-						});
+					columnDoc.appendChild(adopt);
+					console.log(columnDoc.children);
 
-				}
+				});
+			}else{
+				console.log("columnDoc is null");
 			}
 		});
-
-	}
+	*/}
 
 	async update(id){
 		await this.getForUpdate(id);
+		this.resetColumnDiv();
 		if(this._ismounted){
-				setTimeout(()=>{
-					this.update(id)
-				},10000);
+				setTimeout(async ()=>{
+					await this.update(id);
+
+				},5000);
 		}
 	}
 
@@ -428,6 +430,7 @@ class Board extends Component {
 			//this.props.history.push("/home");
 		}
 	}
+
 	async getcolumns(columnids) {
 		return ColumnServices.getColumns(columnids).then(async res => {
 			var columns = res.data;
@@ -509,7 +512,7 @@ class Board extends Component {
 		this.setState({ newColumnDialogOpen: false });
 	};
 
-	onColumnSubmit = e => {
+	onColumnSubmit = async e => {
 		e.preventDefault();
 
 		var newColumn = {
@@ -521,16 +524,16 @@ class Board extends Component {
 		if (this.state.ColumnDialogId === null) {
 
 			var boardId = this.state.id;
-			this.onNewColumn(newColumn, boardId);
+			await this.onNewColumn(newColumn, boardId);
 		} else {
-			this.onUpdateColumn(newColumn, this.state.ColumnDialogId);
+			await this.onUpdateColumn(newColumn, this.state.ColumnDialogId);
 		}
 	};
 
-	onUpdateColumn(updateColumn, id) {
+	async onUpdateColumn(updateColumn, id) {
 		var update = updateColumn;
 		update.id = id;
-		ColumnServices.updateColumn(update).then(res => {
+		await ColumnServices.updateColumn(update).then(res => {
 			var columns = this.state.columns;
 			columns.forEach((column, i) => {
 				if (column._id === id) {
@@ -543,17 +546,22 @@ class Board extends Component {
 		});
 	}
 
-	onNewColumn(newColumn, boardId) {
-		ColumnServices.newColumn(newColumn).then(res => {
+	async onNewColumn(newColumn, boardId) {
+		await ColumnServices.newColumn(newColumn).then(async res => {
 			const columnId = res.data._id;
 
 			var columns = this.state.columns;
 			columns.push(res.data);
 			this.setState({ columns: columns, newColumnDialogOpen: false, newColumnName: '', newColumnIsMovable: true, newColumnLimitation: 0 });
 			var board = this.state.board;
-			var listColumnId = board.columns;
+			var listColumnId = [];
+			if(board.columns != null)
+				listColumnId = board.columns;
 			listColumnId.push(columnId);
-			var newLogs = board.logs;
+			var newLogs = [];
+			if(board.logs !== null){
+				newLogs = board.logs;
+			}
 			newLogs.push(`creation of the column ${res.data.name}`);
 			var updateBoard = {
 				id: boardId,
@@ -563,15 +571,15 @@ class Board extends Component {
 			board.columns = listColumnId;
 			board.logs = newLogs;
 
-			BoardServices.updateBoard(updateBoard).then(res => {
+			await BoardServices.updateBoard(updateBoard).then(async res => {
 				var log = {
 					type : 'newColumn',
 					columnId : columnId,
 				};
-				BoardServices.addLogs(this.state.id, null, log);
+				await BoardServices.addLogs(this.state.id, null, log);
+				await this.getForUpdate(this.state.id);
 
 				//console.log('board updated', res.data.newboard);
-				this.setState({ board: board });
 			}).catch(err => {
 				console.log(err);
 			});
@@ -583,7 +591,7 @@ class Board extends Component {
 	async onDeleteColumn(columnId){
 		await ColumnServices.deleteColumn(columnId).then(() => {
 			this.getForUpdate(this.state.id);
-		})
+		});
 	}
 
 	async onColumnMove(idFrom, direction){
@@ -659,8 +667,7 @@ class Board extends Component {
 	TaskhandleClose = () => {
 		this.setState({ newTaskDialogOpen: false });
 	};
-
-	onTaskSubmit = e => {
+	onTaskSubmit = async  e => {
 		e.preventDefault();
 
 		var color = this.state.newTaskColor;
@@ -681,17 +688,17 @@ class Board extends Component {
 		};
 
 		if (this.state.TaskDialogId === null) {
-			this.onNewTask(newTask);
+			await this.onNewTask(newTask);
 		} else {
-			this.onUpdateTask(newTask, this.state.TaskDialogId);
+			await this.onUpdateTask(newTask, this.state.TaskDialogId);
 		}
 
 	};
-	onUpdateTask(updateTask, id) {
+
+	async onUpdateTask(updateTask, id) {
 		var update = updateTask;
 		update.id = id;
-		TaskServices.updateTask(update)
-			.then(res => {
+		await TaskServices.updateTask(update).then(res => {
 				var columns = this.state.columns;
 				var indexColumn = null;
 				var indexTask = null;
@@ -722,10 +729,16 @@ class Board extends Component {
 			})
 			.catch(err => { console.log(err); });
 	}
-	onNewTask(newTask) {
-		TaskServices.newTask(newTask).then(res => {
 
-			var columns = this.state.columns;
+	async onNewTask(newTask) {
+		await TaskServices.newTask(newTask).then(async res => {
+			var columns = [];
+			if(this.state.columns !== null){
+				columns = this.state.columns;
+			}
+			if(columns[0].tasks === null){
+				columns[0].tasks = [];
+			}
 			columns[0].tasks.push(res.data);
 			this.setState({
 				columns: columns,
@@ -747,7 +760,7 @@ class Board extends Component {
 				tasks: listTaskId
 			}
 			//console.log('updateColumn', updateColumn);
-			ColumnServices.updateColumn(updateColumn).then(() => {
+			await ColumnServices.updateColumn(updateColumn).then(() => {
 				var log = {
 					type : 'newTask',
 					taskId : res.data._id,
@@ -815,7 +828,6 @@ class Board extends Component {
 		ColumnServices.updateColumn(updateToColumn);
 		this.setState({ columns: columns });
 	}
-
 
 	onArchivedTask(task_id){
 		var archivedTasks = this.state.board.archived_tasks;
@@ -909,7 +921,6 @@ class Board extends Component {
 		});
 	}
 
-
 	addMembers(userEmail) {
 		var isAMember = false;
 		//Verify that the member exists
@@ -966,43 +977,29 @@ class Board extends Component {
 	}
 
 	async taskRecieved(move) {
+
+		console.log(move);
 		var columnId = move.toColumnId;
 		var taskId = move.taskId;
+
 		var boardId = move.boardId;
 		var user_id = move.user_id;
 
 		if(columnId != null && taskId != null){
-			var toColumnId = columnId;
 			var index = move.index;
-			try{
-			await ColumnServices.getColumnByTaskId(taskId).then(async (columnRes) => {
-				var fromColumn = columnRes.data;
-				if (fromColumn._id !== toColumnId){
-					var move={
-						taskId: taskId,
-						fromColumnId: fromColumn._id,
-						toColumnId : toColumnId,
-						index : index,
-					}
-					await TaskServices.onTaskMoveFromTo(move).then(async (res) => {
-						var log = {
-						 	type : 'move',
-						 	taskId : res.taskId,
-						 	fromColumn : res.from._id,
-						 	toColumn: res.to._id
-					 	};
-						await BoardServices.addLogs(boardId, user_id, log);
-					});
-				}else{
-					//console.log("start column and target column are the same index = ",index);
-					if(index != null){
-						await TaskServices.onOrderTask(fromColumn,taskId, index)
-					}
+			await ColumnServices.movetask({toId : columnId, taskId: taskId, index : index}).then(async (moveRes) => {
+				var move = moveRes.data;
+				if(move.taskId){
+					var log = {
+						type : 'move',
+						taskId : move.taskId,
+						fromColumn : move.fromColumn,
+						toColumn: move.toColumn
+					};
+					await BoardServices.addLogs(boardId, user_id, log);
 				}
 			});
-		}catch(e){};
-	}
-
+		}
 	}
 
 	render() {
@@ -1042,46 +1039,54 @@ class Board extends Component {
 			<GridList className={classes.gridList} cols={5}>
 				{
 					this.state.columns.map((value, index) => (
-						<GridListTile className={classes.gridTile} key={value._id}>
+						<GridListTile className={classes.gridTile}>
 							<Card width={500} className={classes.paperColumn} >
 								<CardHeader
-									avatar={
-										<div style={{width: 60}}>
-										{
-										index >0 ?
-											<IconButton onClick={() => {this.onColumnMove(value._id,"left")}} size="small" aria-label="settings">
-											<ChevronLeftIcon />
-											</IconButton>
-										: null
-										}
-										{index < this.state.columns.length -1
-											?
-											<IconButton onClick={() => {this.onColumnMove(value._id,"right")}} size="small" aria-label="settings">
-											<ChevronRightIcon />
-											</IconButton>
+									avatar={ this.state.user_id === this.state.board.manager ?
+											<div style={{width: 60}}>
+											{
+											index >0 ?
+												<IconButton onClick={() => {this.onColumnMove(value._id,"left")}} size="small" aria-label="settings">
+												<ChevronLeftIcon />
+												</IconButton>
+											: null
+											}
+											{index < this.state.columns.length -1
+												?
+												<IconButton onClick={() => {this.onColumnMove(value._id,"right")}} size="small" aria-label="settings">
+												<ChevronRightIcon />
+												</IconButton>
 
-											:null}
-										</div>
+												:null}
+											</div>
+											: null
 									}
-									action={
+									action={ this.state.user_id === this.state.board.manager ?
 										<div>
 										<IconButton onClick={() => { this.ColumnhandleClickModify(index) }} size="small" aria-label="settings">
 											<MoreVertIcon />
 										</IconButton>
 										</div>
+										: null
 									}
 									title={<Typography style={{paddingRight: 60}}>{value.name}</Typography>}
 								/>
 							<div>
-								<Column id={value._id} className={classes.draggableColumn} onDragEnd={this.taskRecieved} limitation= {value.limitation} user={this.state.userId} boardId={this.state.board._id}>
-
-									<Grid  cols={5} id= 'init'>
+								<Column
+									id={value._id}
+									className={classes.draggableColumn}
+									onDragEnd={async (move)=>{
+										return await this.taskRecieved(move);
+									}}
+									limitation= {value.limitation}
+									user={this.state.userId}
+									boardId={this.state.board._id}
+								>
 										{
 											(value.tasks.length > 0)
 											?
 											value.tasks.map((task, taskIndex) => (
 												(this.state.filters(task)) ?
-												<div>
 													<Task
 														editIcon = {<EditIcon/>}
 														id={task._id}
@@ -1091,8 +1096,10 @@ class Board extends Component {
 														className={classes.task}
 														task={task}
 														onClickEdit={() => {this.TaskhandleClickModify(index, taskIndex)}}
-														draggable="true"
-														onDragEnd={this.taskRecieved}
+														draggable={(this.state.user_id === this.state.board.manager) || value.movableByMembers}
+														onDragEnd={async(move)=>{
+															return await this.taskRecieved(move);
+														}}
 														columnid={value._id}
 														color={task.color}
 														assignTeamMembers={task.assignTeamMembers.map((member) => {
@@ -1107,21 +1114,20 @@ class Board extends Component {
 															});
 															return myMember;
 														})}/>
-												</div>
+
 												: null
 											))
 											:
 											null
 										}
-									</Grid>
 									</Column>
 							</div>
 								{
-									(index === 0)
+									((index === 0) && (this.state.user_id === this.state.board.manager))
 										?
 										<Button onClick={this.TaskhandleClickOpen}>
 											+ Add a Card
-                    					</Button>
+										</Button>
 										:
 										null
 								}
@@ -1134,12 +1140,19 @@ class Board extends Component {
 				onClick={() => this.props.history.push(`/archivedtasks/${this.state.id}`)}>
 					See archived tasks
 			</Button>
-			<Button onClick={this.ColumnhandleClickOpen} variant="contained" color="primary">
-				New column
-            </Button>
-			<Button onClick={this.MembershandleClickOpen} variant="contained" color="primary">
-				Manage members
-            </Button>
+			{(this.state.user_id === this.state.board.manager) ?
+				<div>
+					<Button onClick={this.ColumnhandleClickOpen} variant="contained" color="primary">
+						New column
+					</Button>
+					<Button onClick={this.MembershandleClickOpen} variant="contained" color="primary">
+						Manage members
+					</Button>
+				</div>
+				:
+				null
+			}
+
 			<Dialog open={this.state.addMemberDialogOpen} onClose={this.MembershandleClose} aria-labelledby="form-dialog-columntitle">
 				<DialogTitle id="form-dialog-columntitle">
 					{this.state.titleDialog}
@@ -1338,7 +1351,7 @@ class Board extends Component {
 						<Grid container spacing={1}>
 						  <Grid container item xs={12} spacing={1}>
 						  {this.state.members.map((value, index) => (
-							  <Grid key={index} container item xs={2} spacing={1} alignItems="center" direction="column">
+							  <Grid container item xs={2} spacing={1} alignItems="center" direction="column">
 							  	<IconButton style={{backgroundColor: "grey", width: 50, height: 50, padding: 0}} onClick={() => {
 									var members = this.state.newTaskMembers;
 									var indexMember = -1;
@@ -1375,7 +1388,7 @@ class Board extends Component {
 						<Grid container spacing={1}>
 						  <Grid container item xs={12} spacing={1}>
 						  {this.state.colors.map((value, index) => (
-							  <Grid key={index} item>
+							  <Grid item>
 							  {
 							 (this.state.newTaskColor !== value)
 								 ?

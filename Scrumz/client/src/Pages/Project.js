@@ -70,22 +70,21 @@ class Project extends Component {
 	}
 
 	async onNewBoard(newBoard) {
-		BoardServices.newboard(newBoard).then(async res => {
+		await BoardServices.newboard(newBoard).then(async res => {
 			var boards = this.state.boards;
 			boards.push(res.data);
-			var boardIds = boards.map((board) => {return board._id})
+			var boardIds = boards.map((board) => {return board._id});
 			var updateProject = {
 				id : this.state.project._id,
 				boards : boardIds,
 			};
-			ProjectServices.updateProject(updateProject).then(update=>{
-				this.setState({ boards: boards });
-			});
+			this.setState({ boards: boards });
+			await ProjectServices.updateProject(updateProject);
 		});
 	}
 
-	onDeleteBoard(boardId){
-		BoardServices.deleteBoard(boardId).then(async res => {
+	async onDeleteBoard(boardId){
+		await BoardServices.deleteBoard(boardId).then(async res => {
 				var boards = this.state.boards;
 				boards.filter((value, index) => { return value._id != boardId });
 				this.setState({boards : boards});

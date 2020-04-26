@@ -13,6 +13,11 @@ export class ColumnServices {
 
     }
 
+    //move data have {toId : idof the column where the task should go, taskId : the id of the task, index : the index where the task go (optionnal)}
+    static async movetask(moveData){
+      return axios.post('/api/columns/movetask', moveData);
+    }
+
     static async updateColumn(updateColumn) {
         if (updateColumn.tasks != null) {
             var tasks = updateColumn.tasks;

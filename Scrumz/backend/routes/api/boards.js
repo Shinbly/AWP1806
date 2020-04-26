@@ -12,9 +12,9 @@ const Task = require("../../models/Task");
 //@route POST api/boards/getboards
 //@desc Get boards of the user
 //@access Public
-router.post("/getboards", (req,res) => {
+router.post("/getboards", async (req,res) => {
 	const userid = req.body.id;
-	Board.find({members: userid}, function(err, boards) {
+	await Board.find({members: userid}, function(err, boards) {
 		var boardMap = [];
 		boards.forEach(function(boards) {
 			boardMap.push(boards);
@@ -25,17 +25,17 @@ router.post("/getboards", (req,res) => {
 });
 
 //@route POST api/boards/getboardbyid
-router.post("/getboardbyid", (req,res)=>{
-	Board.findById(req.body.id, function(err,board){
+router.post("/getboardbyid",async (req,res)=>{
+	await Board.findById(req.body.id, function(err,board){
 		if (err) return console.log(err);
 		res.send(board);
 	})
 });
 
 //@route POST api/boards/getboardsbyids
-router.post("/getboardsbyids", (req, res) => {
+router.post("/getboardsbyids", async (req, res) => {
     const boardIds = req.body.ids;
-    Board.find().where('_id').in(boardIds).exec((err, boards) => {
+    await Board.find().where('_id').in(boardIds).exec((err, boards) => {
         if (boards!= null && boards.length > 0) {
 					var boardList = [];
 					boards.forEach((board) => {
@@ -47,8 +47,8 @@ router.post("/getboardsbyids", (req, res) => {
 });
 
 //@route POST api/boards/newboard
-router.post("/newboard", (req, res) => {
-	Board.create({
+router.post("/newboard", async (req, res) => {
+	await Board.create({
 		name : req.body.name,
 		columns : req.body.columns,
 		members : req.body.members,
@@ -62,7 +62,7 @@ router.post("/newboard", (req, res) => {
 });
 
 //@route POST api/boards/updateboard
-router.post("/updateboard", (req, res) => {
+router.post("/updateboard",async  (req, res) => {
 
 	update = {};
 	if (req.body.columns)
@@ -74,9 +74,7 @@ router.post("/updateboard", (req, res) => {
 	if(req.body.logs)
 		update.logs = req.body.logs;
 
-
-
-	Board.findByIdAndUpdate(req.body.id,update).then(() => {
+	await Board.findByIdAndUpdate(req.body.id,update).then(() => {
 		res.send({success: true});
 	});;
 });
@@ -101,12 +99,12 @@ router.post("/deleteboard",async (req,res) =>{
 });
 
 //@route POST api/boards/addmember
-router.post("/updatemember", (req, res) => {
+router.post("/updatemember",async  (req, res) => {
 
 	update = {};
 	update.members = req.body.members;
 
-	Board.findByIdAndUpdate(req.body.id,update).then(() => {
+	await Board.findByIdAndUpdate(req.body.id,update).then(() => {
 		res.send({success: true});
 	});;
 });
