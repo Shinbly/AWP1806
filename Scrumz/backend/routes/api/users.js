@@ -177,7 +177,7 @@ router.post("/updateuser", (req, res) => {
 
 
 	User.updateOne({_id: req.body.id}, updateUser)
-		.then(res => console.log(res.ok));
+		.then(() => {res.send("ok");});
 
 });
 

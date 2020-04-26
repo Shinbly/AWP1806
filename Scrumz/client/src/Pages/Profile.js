@@ -98,38 +98,41 @@ class Profile extends Component {
 	onSubmit = e => {
 		e.preventDefault();
 
-		var avatarUrl = document.getElementById("imgAvatar").src;
+		var imageDataURL = this.state.avatar;
 
-		var newImage = document.createElement('img');
-		var canvas = document.createElement("canvas");
-		var ctx = canvas.getContext("2d");
-		newImage.src = avatarUrl;
-		ctx.drawImage(newImage,0,0);
+		if(document.getElementById("imgAvatar") !== null){
+			var avatarUrl = document.getElementById("imgAvatar").src;
+			var newImage = document.createElement('img');
+			var canvas = document.createElement("canvas");
+			var ctx = canvas.getContext("2d");
+			newImage.src = avatarUrl;
+			ctx.drawImage(newImage,0,0);
 
-		console.log('image is of size : '+newImage.width + " "+newImage.height);
+			console.log('image is of size : '+newImage.width + " "+newImage.height);
 
-		var MAX_SIDE = 75;
-		var width = newImage.width;
-		var height = newImage.height;
-		if (width > height) {
-		   if (height > MAX_SIDE) {
-			width *= MAX_SIDE / height;
-			height = MAX_SIDE;
+			var MAX_SIDE = 75;
+			var width = newImage.width;
+			var height = newImage.height;
+			if (width > height) {
+			   if (height > MAX_SIDE) {
+				width *= MAX_SIDE / height;
+				height = MAX_SIDE;
+			  }
+			} else {
+				if (width > MAX_SIDE) {
+				height *= MAX_SIDE / width;
+				width = MAX_SIDE;
+			  }
 		  }
-		} else {
-			if (width > MAX_SIDE) {
-			height *= MAX_SIDE / width;
-			width = MAX_SIDE;
-		  }
-	  }
 
-		canvas.width = width;
-		canvas.height = height;
-		console.log('canvas is of size : '+ canvas.width + " " + canvas.height);
+			canvas.width = width;
+			canvas.height = height;
+			console.log('canvas is of size : '+ canvas.width + " " + canvas.height);
 
-		ctx.drawImage(newImage,0,0,newImage.width,newImage.height,0,0,width,height);
+			ctx.drawImage(newImage,0,0,newImage.width,newImage.height,0,0,width,height);
 
-		var imageDataURL = canvas.toDataURL();
+			imageDataURL = canvas.toDataURL();
+		}
 
 		const updateUser = {
 			id: this.props.auth.user.id,
@@ -140,7 +143,7 @@ class Profile extends Component {
 			avatar: imageDataURL,
 		};
 		UserServices.updateUser(updateUser)
-			.then(res => console.log("ok"))
+			.then(res => {console.log("ok"); this.props.history.push("/home")})
 			.catch(err => console.log("err", err));
 	};
 
