@@ -67,7 +67,6 @@ function Task (props){
 
       return (
             <Card
-            key = {props.id}
             id={props.id}
             draggable={draggable}
             onDragStart={dragStart}
@@ -97,11 +96,11 @@ function Task (props){
                 {props.assignTeamMembers.map((value, index) => (
 
                   (index < 3) ?
-                  <Tooltip title={value.username}>
+                  <Tooltip key = {value._id} title={value.username}>
                     <Avatar alt={value.username} src={value.avatar} />
                   </Tooltip>
                   : (index === 3) ?
-                  <Tooltip title={props.assignTeamMembers.map(m => { return m.username }).join(' • ')}>
+                  <Tooltip key = {value._id}  title={props.assignTeamMembers.map(m => { return m.username }).join(' • ')}>
                     <Avatar>+{props.assignTeamMembers.length-3}</Avatar>
                   </Tooltip>
                   : null
