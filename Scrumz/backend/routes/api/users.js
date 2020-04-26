@@ -15,7 +15,7 @@ const User = require("../../models/User");
 //@route POST api/users/register
 //@desc Register user
 //@access Public
-router.post("/register", (req,res) => {
+router.post("/register",async  (req,res) => {
 	//Form validation
 	const {errors, isValid} = validateRegisterInput(req.body);
 
@@ -24,7 +24,7 @@ router.post("/register", (req,res) => {
 		return res.status(400).json(errors);
 	}
 
-	User.findOne({email: req.body.email}).then(user => {
+	await User.findOne({email: req.body.email}).then(user => {
 		if(user) {
 			return res.status(400).json({ email: "Email already exists" });
 		}else{
@@ -47,7 +47,6 @@ router.post("/register", (req,res) => {
 		});
 		}
 
-		console.log("function done");
 	});
 });
 
@@ -55,7 +54,7 @@ router.post("/register", (req,res) => {
 //@route POST api/user/login
 //@desc Login user and return JWT token
 //@access Public
-router.post("/login", (req,res) => {
+router.post("/login", async (req,res) => {
 	//Form validation
 	const {errors, isValid} = validateLoginInput(req.body);
 
@@ -68,7 +67,7 @@ router.post("/login", (req,res) => {
 	const password = req.body.password;
 
 	//Find user by email
-	User.findOne({email}).then(user => {
+	await User.findOne({email}).then(user => {
 		//Check if user exists
 		if(!user){
 			return res.status(404).json({emailnotfound: "Email not found"});
@@ -111,11 +110,10 @@ router.post("/login", (req,res) => {
 //@route POST api/user/getuser
 //@desc get user from id
 //@access Public
-router.post("/getuser", (req,res) => {
+router.post("/getuser", async (req,res) => {
 	const userid = req.body.id;
-	console.log(req.body);
 
-	User.findOne({_id: userid}, function(err,user){
+	await User.findOne({_id: userid}, function(err,user){
 		res.send(user);
 	})
 });
@@ -123,10 +121,9 @@ router.post("/getuser", (req,res) => {
 //@route POST api/user/getusers
 //@desc get users from ids
 //@access Public
-router.post("/getusers", (req, res) => {
+router.post("/getusers", async (req, res) => {
 	const userids = req.body.ids;
-	console.log(req.body);
-	User.find().where('_id').in(userids).exec((err, users) => {
+	await User.find().where('_id').in(userids).exec((err, users) => {
 		res.send(users);
 	})
 });
@@ -134,11 +131,10 @@ router.post("/getusers", (req, res) => {
 //@route POST api/user/getuserfromemail
 //@desc get user from email
 //@access Public
-router.post("/getuserfromemail", (req,res) => {
+router.post("/getuserfromemail",async  (req,res) => {
 	const email = req.body.email;
-	console.log(req.body.email);
 
-	User.findOne({email: email}, function(err,user){
+	await User.findOne({email: email}, function(err,user){
 		res.send(user);
 	});
 });
@@ -147,7 +143,7 @@ router.post("/getuserfromemail", (req,res) => {
 //@route POST api/user/updateuser
 //@desc update user from id
 //@access Public
-router.post("/updateuser", (req, res) => {
+router.post("/updateuser", async (req, res) => {
 
 	//Form validation
 	const {errors, isValid} = validateUpdateInput(req.body);
@@ -179,6 +175,11 @@ router.post("/updateuser", (req, res) => {
 	User.updateOne({_id: req.body.id}, updateUser)
 		.then(() => {res.send("ok");});
 
+});
+
+router.post("/deleteUser",async  (req,res) => {
+	const userid = req.body.id;
+	await User.findByIdAndRemove(userId);
 });
 
 

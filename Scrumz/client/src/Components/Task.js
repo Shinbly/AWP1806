@@ -8,6 +8,9 @@ import Typography from '@material-ui/core/Typography';
 
 function Task (props){
 
+  var draggable = props.draggable;
+
+
 
     const dragStart = e=>{
         e.stopPropagation();
@@ -23,20 +26,29 @@ function Task (props){
         try{
           console.log("drop")
           var target = e.currentTarget.parentNode;
+          var id = "";
+          while (target.id == ''){
+            target = target.parentNode;
+          }
           e.preventDefault();
           const task_id = e.dataTransfer.getData('task_id');
           const task = document.getElementById(task_id);
 
           target.style.background = "#eeeeee";
           target.appendChild(document.adoptNode(task));
+          id = target.id
+
+          draggable = false;
 
           var move = {
             user_id : props.user,
             boardId : props.boardId,
-            toColumnId: target.id,
+            toColumnId: id,
             taskId: task_id,
             index: props.index+1 }
-          props.onDragEnd(move).then(res => {});
+          await props.onDragEnd(move).then(()=>{
+            draggable = props.draggable;
+          });
         }catch(e){
           console.log(e);
         }
@@ -53,49 +65,52 @@ function Task (props){
 
 
     return (
-        < Card
-            id={props.id}
-            draggable={props.draggable}
-            onDragStart={dragStart}
-            onDragEnd={dragEnd}
-            onDrop={drop}
-            className={props.className}
-            elevation={3}
-			style={{ backgroundColor: props.color }}>
-            <CardHeader
-                action={props.editIcon !== null ?
-                <IconButton
-                    onClick = {props.onClickEdit}
-                    size="small"
-                    aria-label="settings" >
-                    {props.editIcon}
-				</IconButton>
-				:null
-                }
-                title={props.task.name}/>
-				<CardContent>
-					<Typography>
-						{props.task.description}
-					</Typography>
-				</CardContent>
-				<CardActions>
-					<AvatarGroup>
-						{props.assignTeamMembers.map((value, index) => (
+        <div
+          id={props.id}
+          draggable={draggable}
+          onDragStart={dragStart}
+          onDragEnd={dragEnd}
+          onDrop={drop}
+          >
+          < Card
+          className={props.className}
+          elevation={3}
+          style={{ backgroundColor: props.color }}>
+          <CardHeader
+            action={props.editIcon !== null ?
+              <IconButton
+                onClick = {props.onClickEdit}
+                size="small"
+                aria-label="settings" >
+                {props.editIcon}
+              </IconButton>
+              :null
+            }
+            title={props.task.name}/>
+          <CardContent>
+            <Typography>
+              {props.task.description}
+            </Typography>
+          </CardContent>
+          <CardActions>
+            <AvatarGroup>
+              {props.assignTeamMembers.map((value, index) => (
 
-								(index < 3) ?
-								<Tooltip title={value.username}>
-									<Avatar alt={value.username} src={value.avatar} />
-								</Tooltip>
-								: (index === 3) ?
-								<Tooltip title={props.assignTeamMembers.map(m => { return m.username }).join(' • ')}>
-									<Avatar>+{props.assignTeamMembers.length-3}</Avatar>
-								</Tooltip>
-								: null
+                (index < 3) ?
+                <Tooltip title={value.username}>
+                  <Avatar alt={value.username} src={value.avatar} />
+                </Tooltip>
+                : (index === 3) ?
+                <Tooltip title={props.assignTeamMembers.map(m => { return m.username }).join(' • ')}>
+                  <Avatar>+{props.assignTeamMembers.length-3}</Avatar>
+                </Tooltip>
+                : null
 
-						))}
-					</AvatarGroup>
-				</CardActions>
-		</Card>
+              ))}
+            </AvatarGroup>
+          </CardActions>
+        </Card>
+        </div>
     )
 }
 

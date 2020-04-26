@@ -9,10 +9,10 @@ const Task = require("../../models/Task");
 //@route POST api/tasks/gettasks
 //@desc Get tasks
 //@access Public
-router.post("/gettasks", (req, res) => {
+router.post("/gettasks",async  (req, res) => {
     const taskids = req.body.ids;
     var taskList = [];
-    Task.find().where('_id').in(taskids).exec((err, tasks) => {
+    await Task.find().where('_id').in(taskids).exec((err, tasks) => {
         tasks.forEach((task) => {
             taskList.push(task);
         });
@@ -23,7 +23,7 @@ router.post("/gettasks", (req, res) => {
 
 
 //@route POST api/tasks/newtask
-router.post("/newtask", (req, res) => {
+router.post("/newtask", async (req, res) => {
     //Form validation
     const { errors, isValid } = validateTaskInput(req.body);
 
@@ -32,7 +32,7 @@ router.post("/newtask", (req, res) => {
         return res.status(400).json(errors);
     }
 
-    Task.create({
+    await Task.create({
         name: req.body.name,
         description: req.body.description,
         assignTeamMembers: req.body.assignTeamMembers,
@@ -48,7 +48,7 @@ router.post("/newtask", (req, res) => {
     });
 });
 
-router.post("/updatetask",(req,res)=>{
+router.post("/updatetask",async (req,res)=>{
 	update = {};
     if (req.body.name)
         update.name = req.body.name;
@@ -77,15 +77,15 @@ router.post("/updatetask",(req,res)=>{
 	if(req.body.color)
 		update.color = req.body.color;
 
-	Task.findByIdAndUpdate(req.body.id, update)
+	await Task.findByIdAndUpdate(req.body.id, update)
 		.then(() => {res.send({success: true})});
 });
 
-router.post('deletetask',(req,res)=>{
-	Task.findByIdAndRemove(req.body.id, function(err,column) {
+router.post('deletetask',async (req,res)=>{
+	await Task.findByIdAndRemove(req.body.id, function(err,column) {
 		if (err) return console.log(err);
 	}).then(() => {
-		res.send({success: true});
+		res.send('deleted');
 	});
 });
 
