@@ -172,8 +172,8 @@ router.post("/updateuser", async (req, res) => {
 	}
 
 
-	await User.updateOne({_id: req.body.id}, updateUser)
-		.then(res => console.log(res.ok));
+	User.updateOne({_id: req.body.id}, updateUser)
+		.then(() => {res.send("ok");});
 
 });
 
