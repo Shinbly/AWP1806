@@ -161,6 +161,13 @@ class Board extends Component {
 			state.id = board._id;
 			state.name = board.name;
 
+			this.setState({
+				board: board,
+				id: board._id,
+				name: board.name, 
+			}
+			);
+
 			await UserServices.getUsersbyIds(board.members).then((res) => {
 				//console.log('users : '+res.data);
 				this.setState({

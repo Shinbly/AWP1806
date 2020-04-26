@@ -42,7 +42,9 @@ router.post("/getboardsbyids", async (req, res) => {
 						boardList.push(board);
 					});
 					res.send(boardList);
-        }
+        }else{
+			res.send([]);
+		}
     });
 });
 
