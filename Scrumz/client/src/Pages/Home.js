@@ -116,6 +116,7 @@ class Home extends Component {
 				<Card className={classes.cards} >
 					<CardActionArea>
 						<CardMedia
+							onClick={() => this.props.history.push(`/project/${project._id}`)}
 							component="img"
 							alt="Texture"
 							height="140"
@@ -129,9 +130,11 @@ class Home extends Component {
 						<Button color="primary"	onClick={() => this.props.history.push(`/project/${project._id}`)}>
 								See project
 						</Button>
-						<Button onClick={()=>{this.setState({projectIdToDelete : project._id, deleteProjectDialogOpen: true})}} color="primary">
-							Delete project
-						</Button>
+						{this.props.auth.user.id === project.manager ?
+							<Button onClick={()=>{this.setState({projectIdToDelete : project._id, deleteProjectDialogOpen: true})}} color="primary">
+								Delete project
+							</Button>
+							: null}
 					</CardActions>
 				</Card>
 			</Grid>

@@ -84,16 +84,16 @@ class Project extends Component {
 	}
 
 	async onDeleteBoard(boardId){
+		var boards = this.state.boards;
+		boards = boards.filter((value, index) => { return value._id !== boardId });
 		await BoardServices.deleteBoard(boardId).then(async res => {
-				var boards = this.state.boards;
-				boards.filter((value, index) => { return value._id != boardId });
-				this.setState({boards : boards});
 				var updateProject = {
 					id : this.state.project._id,
 					boards : boards.map(board=>{return board._id}),
 				};
 				await ProjectServices.updateProject(updateProject);
 		});
+		this.setState({boards : boards});
 	}
 
 	handleClickOpen = () => {
@@ -133,6 +133,7 @@ class Project extends Component {
 				<Card className={classes.cards} >
 					<CardActionArea>
 						<CardMedia
+
 							component="img"
 							alt="Texture"
 							height="140"
@@ -147,9 +148,11 @@ class Project extends Component {
 							onClick={() => this.props.history.push(`/board/${board._id}`)}>
 								See Board
 						</Button>
+						{this.props.auth.user.id === board.manager ?
 						<Button onClick={()=>{this.setState({boardIdToDelete : board._id, deleteBoadDialogOpen: true})}} color="primary">
 							Delete Board
 						</Button>
+						: null}
 					</CardActions>
 				</Card>
 			</Grid>
