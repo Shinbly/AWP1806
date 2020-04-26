@@ -16,28 +16,28 @@ const Project = require("../../models/Project");
 //@access Public
 router.post("/getprojects", async (req,res) => {
 	const userId = req.body.id;
-  var boardsId = [];
 	var projectsMap  = [];
-	await Project.find({manager : userId}, function(err, projects){
+	await Project.find({manager : userId}, function(err, myProjects){
 		if (err) return console.log(err);
-		projects.forEach((p, i) => {
+		myProjects.forEach((p, i) => {
 			projectsMap.push(p);
 		});
-	});
-  await Board.find({members: userId},function(err, boards) {
-    boards.forEach(function(boards) {
-      boardsId.push(boards._id);
-    });
-  });
-	await Project.find({ boards: { $in: boardsId }},function(err,projects){
-		var projectsMap = [];
-		projects.forEach((p, i) => {
-			if(!projectsMap.includes(p)){
-				projectsMap.push(p);
+	}).then(async ()=>{
+		var boardsId = [];
+		await Board.find({members: userId}, function(err, boards) {
+			var nb_project = boards.length + projectsMap.length;
+			for(var boardIndex = 0 ; boardIndex < boards.length; boardIndex ++){
+				var boardId = boards[boardIndex]._id;
+				Project.find({boards: boardId.toString()},function(err,projects){
+					projectsMap.push(projects[0]);
+				}).then(()=>{
+					if(nb_project === projectsMap.length){
+						res.send(projectsMap);
+					}
+				});
 			}
 		});
 	});
-	res.send(projectsMap);
 });
 
 //@route POST api/projects/getprojectbyid

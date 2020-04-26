@@ -153,25 +153,19 @@ class Board extends Component {
 	}
 
 	async getForUpdate(boardId){
-		var state = {};
 		await BoardServices.getBoardById(boardId).then(async boardData => {
 			//console.log('board : ', boardData.data);
 			var board = boardData.data
-			state.board = board;
-			state.id = board._id;
-			state.name = board.name;
 
 			this.setState({
-				board: board,
-				id: board._id,
-				name: board.name, 
-			}
-			);
-
-			await UserServices.getUsersbyIds(board.members).then((res) => {
+				board : board,
+				id : board._id,
+				name : board.name,
+			});
+			await UserServices.getUsersbyIds(board.members).then((memberData) => {
 				//console.log('users : '+res.data);
 				this.setState({
-					members: res.data
+					members: memberData.data
 				});
 			});
 
@@ -186,10 +180,9 @@ class Board extends Component {
 						}) ;;
 						return indexA - indexB;
 					});
-					state.columns = columns;
 
-
-					this.setState(state);
+					this.resetColumns(this.state.columns);
+					this.setState({columns : columns});
 				});
 
 			}
@@ -376,25 +369,25 @@ class Board extends Component {
 		return myLogs;
 	}
 
-	getColumnDivs(columns){
-			return columns.map((column, i) => {
-				var columnDoc = document.getElementById(column._id);
-				if(columnDoc != null){
-					column.tasks.forEach((task, j) => {
-						var taskDoc = document.getElementById(task._id);
-						if(taskDoc != null){
-							var adopt = document.adoptNode(taskDoc);
-							columnDoc.appendChild(adopt);
-						}else{
-							console.log("taskDoc is null");
-						}
-					});
-					return columnDoc
-				}else{
-					console.log("columnDoc is null");
-				}
-			});
+	resetColumns(columns){
+		columns.forEach((column, i) => {
+			var columnDoc = document.getElementById(column._id);
+			if(columnDoc != null){
+				column.tasks.forEach((task, j) => {
+					var taskDoc = document.getElementById(task._id);
+					if(taskDoc != null){
+						var adopt = document.adoptNode(taskDoc);
+						columnDoc.appendChild(adopt);
+					}else{
+						console.log("taskDoc is null");
+					}
+				});
+			}else{
+				console.log("columnDoc is null");
+			}
+		});
 	}
+
 
 	async getmoves(){
 		var columns = [];
@@ -430,7 +423,6 @@ class Board extends Component {
 				setTimeout(async ()=>{
 					await this.getmoves();
 					await this.update(id);
-
 				},5000);
 		}
 	}
@@ -456,9 +448,9 @@ class Board extends Component {
 		return ColumnServices.getColumns(columnids).then(async res => {
 			var columns = res.data;
 			//console.log('columns' +columns);
-			return Promise.all(columns.map(column => {
+			return Promise.all(columns.map(async column => {
 				if (column.tasks.length > 0) {
-					return TaskServices.getTasks({ids: column.tasks}).then(async res => {
+					return await TaskServices.getTasks({ids: column.tasks}).then(async res => {
 						//console.log('tasks '+res.data);
 						return ({ _id: column._id, name: column.name, tasks: res.data, movableByMembers: column.movableByMembers, limitation: column.limitation });
 					});
