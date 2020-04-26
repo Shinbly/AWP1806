@@ -52,7 +52,14 @@ class Home extends Component {
 	componentDidMount() {
 		ProjectServices.getProjectsByUser(this.props.auth.user.id)
 			.then(res => {
-				this.setState({ projects: res.data });
+				var projects = [];
+				res.data.forEach((project, i) => {
+					if(!projects.map(value=>value._id.toString()).includes(project._id.toString())){
+						projects.push(project);
+					}
+				});
+
+				this.setState({ projects: projects });
 			})
 			.catch(err => { console.log(err) }
 			);
@@ -112,7 +119,7 @@ class Home extends Component {
 		const { classes } = this.props;
 
 		const projects = this.state.projects.map(project => (
-			<Grid item key={project._id}>
+			<Grid id ={project._id} item key={project._id}>
 				<Card className={classes.cards} >
 					<CardActionArea>
 						<CardMedia
