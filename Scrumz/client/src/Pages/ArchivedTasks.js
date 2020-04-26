@@ -145,6 +145,7 @@ class ArchivedTasks extends Component {
 							{
 								this.state.archived_tasks.map((task, index) => (
 									<Task
+										canEdit = {(this.state.user_id === this.state.board.manager)}
 										editIcon = {<UnarchiveIcon/>}
 										id={task._id}
 										user={this.state.userId}

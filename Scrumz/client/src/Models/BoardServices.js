@@ -45,7 +45,7 @@ export class BoardServices {
 
 
         newLogs.unshift(JSON.stringify(jsonLog));
-        //newLogs.splice(0, 10);
+        newLogs.splice(0, 10);
         var updateBoard = {
           id: boardId,
           logs: newLogs

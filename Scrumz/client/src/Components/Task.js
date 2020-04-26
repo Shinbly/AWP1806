@@ -32,23 +32,26 @@ function Task (props){
           }
           e.preventDefault();
           const task_id = e.dataTransfer.getData('task_id');
-          const task = document.getElementById(task_id);
+          e.dataTransfer.setData('task_id', "");
+          if(task_id !== ""){
+            const task = document.getElementById(task_id);
 
-          target.style.background = "#eeeeee";
-          target.appendChild(document.adoptNode(task));
-          id = target.id
+            target.style.background = "#eeeeee";
+            target.appendChild(document.adoptNode(task));
+            id = target.id
 
-          draggable = false;
+            draggable = false;
 
-          var move = {
-            user_id : props.user,
-            boardId : props.boardId,
-            toColumnId: id,
-            taskId: task_id,
-            index: props.index+1 }
-          await props.onDragEnd(move).then(()=>{
-            draggable = props.draggable;
-          });
+            var move = {
+              user_id : props.user,
+              boardId : props.boardId,
+              toColumnId: id,
+              taskId: task_id,
+              index: props.index+1 }
+              await props.onDragEnd(move).then(()=>{
+                draggable = props.draggable;
+              });
+          }
         }catch(e){
           console.log(e);
         }
@@ -62,56 +65,52 @@ function Task (props){
         e.target.style.display = 'block';
     }
 
+      return (
+            <Card
+            key = {props.id}
+            id={props.id}
+            draggable={draggable}
+            onDragStart={dragStart}
+            onDragEnd={dragEnd}
+            onDrop={drop}
+            className={props.className}
+            elevation={3}
+            style={{ backgroundColor: props.color }}>
+            <CardHeader
+              action={((props.editIcon !== null) && props.canEdit)  ?
+                <IconButton
+                  onClick = {props.onClickEdit}
+                  size="small"
+                  aria-label="settings" >
+                  {props.editIcon}
+                </IconButton>
+                :null
+              }
+              title={props.task.name}/>
+            <CardContent>
+              <Typography>
+                {props.task.description}
+              </Typography>
+            </CardContent>
+            <CardActions>
+              <AvatarGroup>
+                {props.assignTeamMembers.map((value, index) => (
 
+                  (index < 3) ?
+                  <Tooltip title={value.username}>
+                    <Avatar alt={value.username} src={value.avatar} />
+                  </Tooltip>
+                  : (index === 3) ?
+                  <Tooltip title={props.assignTeamMembers.map(m => { return m.username }).join(' • ')}>
+                    <Avatar>+{props.assignTeamMembers.length-3}</Avatar>
+                  </Tooltip>
+                  : null
 
-    return (
-        <div
-          id={props.id}
-          draggable={draggable}
-          onDragStart={dragStart}
-          onDragEnd={dragEnd}
-          onDrop={drop}
-          >
-          < Card
-          className={props.className}
-          elevation={3}
-          style={{ backgroundColor: props.color }}>
-          <CardHeader
-            action={props.editIcon !== null ?
-              <IconButton
-                onClick = {props.onClickEdit}
-                size="small"
-                aria-label="settings" >
-                {props.editIcon}
-              </IconButton>
-              :null
-            }
-            title={props.task.name}/>
-          <CardContent>
-            <Typography>
-              {props.task.description}
-            </Typography>
-          </CardContent>
-          <CardActions>
-            <AvatarGroup>
-              {props.assignTeamMembers.map((value, index) => (
-
-                (index < 3) ?
-                <Tooltip title={value.username}>
-                  <Avatar alt={value.username} src={value.avatar} />
-                </Tooltip>
-                : (index === 3) ?
-                <Tooltip title={props.assignTeamMembers.map(m => { return m.username }).join(' • ')}>
-                  <Avatar>+{props.assignTeamMembers.length-3}</Avatar>
-                </Tooltip>
-                : null
-
-              ))}
-            </AvatarGroup>
-          </CardActions>
-        </Card>
-        </div>
-    )
+                ))}
+              </AvatarGroup>
+            </CardActions>
+          </Card>
+      );
 }
 
 export default Task
